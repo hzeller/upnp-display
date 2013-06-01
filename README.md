@@ -93,6 +93,7 @@ one you're interested in with the `-n` option:
 
 ### Compatiblity
 
+#### UPnP Renderers
 This should work with all renderers, that do proper eventing of variable
 changes. This program does not, at this time, actively query the renderer
 but expects it to transmit changes according to the UPnP eventing standard.
@@ -100,3 +101,15 @@ but expects it to transmit changes according to the UPnP eventing standard.
 Right now, this is tested with
 [gmrender-resurrect](http://github.com/hzeller/gmrender-resurrect)
 ... which is perfect in the network or even run on the same machine.
+
+#### LCD Displays
+We can't check the 'busy'-status of the LCD display, as we can't read from
+the interface (the LCD operats at 5V and the GPIO pins only tolerate 3.3V). Hence
+the handshake to the display is ensured by waiting after each write which should
+be enough according to the data sheet. If you need tweaking, look at
+lcd-display.cc
+
+#### Other machines than Raspberry Pi
+If you want to connect the display in a different way, on some other computer
+than the Paspberry Pi, you need to change the hardware interfacing bit-interface
+in lcd-display.cc
