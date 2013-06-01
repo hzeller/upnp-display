@@ -5,12 +5,11 @@ This little program is a passive UPnP control point that connects to a UPnP/DNLA
 renderer (e.g. [gmrender-resurrect][]) anywhere in your
 local network.
 It listens for changes in the state of the player (Title, Album etc.,
-Play/Paused/Stop) and displays it on a 16x2 LCD display (These displays are
-cheap, you get them for less than $3 on eBay).
+Play/Paused/Stop) and displays it on a common 16x2 LCD display.
 
 ### Connect the Hardware
 
-Firwt, we need to connect the LCD display to the Raspberry Pi.
+First, we need to connect the LCD display to the Raspberry Pi.
 You need
    - One 16x2 LCD display (HD44780 compatible; _very_ common and cheap display,
      less than $3 on eBay)
@@ -21,7 +20,7 @@ You need
 
 ![LCD Display and connector][parts]
 
-First: identify the pins on the LCD display. They typically have 16 connectors
+First: identify the pins on the LCD display. They typically have 16 solder pins
 (sometimes 14 when they don't have a backlight). Pin 1 is usually closer to the
 edge of the board. Often marked with a '1' or a dot.
 
@@ -67,7 +66,9 @@ Now, plug this into the outer row of your Raspberry Pi GPIO:
 
 ### Compile the program
 
-You need to have libupnp installed
+Here are the commands you need to execute on your Raspberry Pi shell.
+
+First, you need to have libupnp installed.
 
     sudo apt-get install libupnp-dev
 
@@ -80,7 +81,8 @@ it:
 
     git clone https://github.com/hzeller/upnp-display.git
 
-.. Now you can compile it
+Now change into the directory of the checked out source and simply compile it
+with `make`:
    
     cd upnp-display
     make
@@ -92,7 +94,7 @@ You need to start the program as root, as it needs to access the GPIO pins:
 
     sudo ./upnp-display
 
-In the LCD display, it should now print that it is waiting for any renderer;
+The LCD display should now print that it is waiting for any renderer;
 once it found a renderer, it will display the title/album playing.
 
 If you have multiple renderers in your network, you can select the particular
@@ -102,7 +104,7 @@ one you're interested in with the `-n` option:
 
 ![yay, working][in-operation]
 
-### Compatiblity
+### Compatibility
 
 #### UPnP Renderers
 This should work with all renderers, that do proper eventing of variable
