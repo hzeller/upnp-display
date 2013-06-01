@@ -73,15 +73,19 @@ private:
 class UIFormatter : public ControllerObserver {
 public:
   UIFormatter(const std::string &friendly_name, Printer *printer)
-    : player_name_(friendly_name), printer_(printer), current_state_(NULL) {
+    : player_match_name_(friendly_name),
+      printer_(printer), current_state_(NULL) {
     ithread_mutex_init(&mutex_, NULL);
     printer_->Print(0, "Waiting for");
-    std::string to_print = player_name_.empty() ? "any Renderer" : player_name_;
+    std::string to_print = (player_match_name_.empty()
+                            ? "any Renderer"
+                            : player_match_name_);
     CenterAlign(&to_print, printer_->width());
     printer_->Print(1, to_print);
   }
   
   void Loop() {
+    std::string player_name;
     std::string title, composer, artist, album;
     std::string play_state = "STOPPED";
     int time = 0;
@@ -94,6 +98,7 @@ public:
       bool got_var = false;
       ithread_mutex_lock(&mutex_);
       if (current_state_ != NULL) {
+        player_name = current_state_->friendly_name();
         title = current_state_->GetVar("Meta_Title");
         composer = current_state_->GetVar("Meta_Composer");
         artist = current_state_->GetVar("Meta_Artist");
@@ -121,7 +126,7 @@ public:
 
       if (print_line.empty()) {
         // Nothing else to display ? Say play-state.
-        print_line = player_name_;
+        print_line = player_name;
         CenterAlign(&print_line, printer_->width());
         printer_->Print(0, print_line);
 
@@ -166,8 +171,11 @@ public:
 
   virtual void AddRenderer(const std::string &uuid,
                            const RendererState *state) {
+    printf("%s: connected (uuid=%s)\n",
+           state->friendly_name().c_str(), uuid.c_str());
     if (current_state_ == NULL
-        && (player_name_.empty() || player_name_ == state->friendly_name())) {
+        && (player_match_name_.empty()
+            || player_match_name_ == state->friendly_name())) {
       ithread_mutex_lock(&mutex_);
       uuid_ = uuid;
       current_state_ = state;
@@ -224,7 +232,7 @@ private:
     }
   }
 
-  const std::string player_name_;
+  const std::string player_match_name_;
   Printer *const printer_;
   ithread_mutex_t mutex_;
 
