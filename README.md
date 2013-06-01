@@ -102,6 +102,12 @@ Right now, this is tested with
 [gmrender-resurrect](http://github.com/hzeller/gmrender-resurrect)
 ... which is perfect in the network or even run on the same machine.
 
+#### Special characters
+While the titles and album names can contain the full UTF-8 characters set,
+the LCD displays can't show them by default.
+The LCD displays allow for adding custom character bitmaps so this _could_ be
+implemented, but isn't at this time.
+
 #### LCD Displays
 We can't check the 'busy'-status of the LCD display, as we can't read from
 the interface (the LCD operats at 5V and the GPIO pins only tolerate 3.3V). Hence

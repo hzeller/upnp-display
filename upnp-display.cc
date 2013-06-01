@@ -29,6 +29,8 @@
 #include "lcd-display.h"
 
 // Utility to help horizontally scroll text
+// (TODO: once we support UTF-8, we need to take character boundaries into
+// account).
 class Scroller {
   static const int kBorderWait = 4;  // ticks to wait at end-of-scroll
 public:
