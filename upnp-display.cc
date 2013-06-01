@@ -157,7 +157,7 @@ public:
       if (play_state != "STOPPED") {
         formatted_time = formatTime(time);
         // 'Blinking' time when paused.
-        if (play_state == "PAUSED_PLAYBACK" && (blink_time / 3) % 2 == 0) {
+        if (play_state == "PAUSED_PLAYBACK" && (blink_time / 2) % 2 == 0) {
           formatted_time = std::string(formatted_time.size(), ' ');
         }
       }
