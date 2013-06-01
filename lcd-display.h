@@ -18,6 +18,8 @@
 #ifndef UPNP_DISPLAY_LCD_
 #define UPNP_DISPLAY_LCD_
 
+#include <string>
+
 #include "printer.h"
 
 // An implementation of an interface to a standard 16x2 LCD display
@@ -26,8 +28,15 @@ class LCDDisplay : public Printer {
 public:
   LCDDisplay();
 
+  // Call this first.
+  bool Init();
+
   // Print text in given line.
   virtual void Print(int line, const std::string &text);
+
+private:
+  bool initialized_;
+  std::string last_line_[2];
 };
 
 #endif // UPNP_DISPLAY_LCD_

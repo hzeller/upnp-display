@@ -26,6 +26,7 @@
 #include "controller-state.h"
 #include "printer.h"
 #include "renderer-state.h"
+#include "lcd-display.h"
 
 class UIFormatter : public ControllerObserver {
   class Scroller {
@@ -72,10 +73,10 @@ public:
   UIFormatter(const std::string &friendly_name, Printer *printer)
     : match_name_(friendly_name), printer_(printer), current_state_(NULL) {
     ithread_mutex_init(&mutex_, NULL);
-    printer_->Print(1, "Waiting for");
+    printer_->Print(0, "Waiting for");
     std::string to_print = match_name_.empty() ? "any Renderer" : match_name_;
     CenterAlign(&to_print, printer_->width());
-    printer_->Print(2, to_print);
+    printer_->Print(1, to_print);
   }
   
   void Loop() {
@@ -122,7 +123,7 @@ public:
       }
       CenterAlign(&print_line, printer_->width());
       first_line_scroller.SetValue(print_line, printer_->width());
-      printer_->Print(1, first_line_scroller.GetScrolledContent());
+      printer_->Print(0, first_line_scroller.GetScrolledContent());
 
       std::string formatted_time;
       if (play_state != "STOPPED") {
@@ -141,7 +142,7 @@ public:
       }
       RightAlign(&print_line, remaining_len);
       second_line_scroller.SetValue(print_line, remaining_len);
-      printer_->Print(2, formatted_time + " "
+      printer_->Print(1, formatted_time + " "
                       + second_line_scroller.GetScrolledContent());
 
       blink_time++;
@@ -158,15 +159,15 @@ public:
       uuid_ = uuid;
       current_state_ = state;
       ithread_mutex_unlock(&mutex_);
-      printer_->Print(1, "Connected to");
-      printer_->Print(2, state->friendly_name());
+      printer_->Print(0, "Connected to");
+      printer_->Print(1, state->friendly_name());
     }
   }
 
   virtual void RemoveRenderer(const std::string &uuid) {
     if (current_state_ != NULL && uuid == uuid_) {
-      printer_->Print(1, "Disconnected");
-      printer_->Print(2, current_state_->friendly_name());
+      printer_->Print(0, "Disconnected");
+      printer_->Print(1, current_state_->friendly_name());
       ithread_mutex_lock(&mutex_);
       current_state_ = NULL;
       ithread_mutex_unlock(&mutex_);
@@ -235,8 +236,15 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  ConsolePrinter printer;
-  //LCDDisplay printer;
+  //ConsolePrinter printer;
+  LCDDisplay printer;
+  if (!printer.Init()) {
+    fprintf(stderr, "You need to run this as root to have access to GPIO pins. "
+            "Run with sudo.\n");
+    return 1;
+  }
+
+  // TODO: drop priviliges
 
   UIFormatter ui(match_name, &printer);
   ControllerState controller(&ui);
