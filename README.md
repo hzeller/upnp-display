@@ -2,7 +2,8 @@ LCD Display showing DNLA/UPnP player status
 -------------------------------------------
 
 This little program is a passive UPnP control point that connects to a UPnP/DNLA
-renderer anywhere in your local network.
+renderer (e.g. [gmrender-resurrect][]) anywhere in your
+local network.
 It listens for changes in the state of the player (Title, Album etc.,
 Play/Paused/Stop) and displays it on a 16x2 LCD display (These displays are
 cheap, you get them for less than $3 on eBay).
@@ -108,9 +109,7 @@ This should work with all renderers, that do proper eventing of variable
 changes. This program does not, at this time, actively query the renderer
 but expects it to transmit changes according to the UPnP eventing standard.
 
-Right now, this is tested with
-[gmrender-resurrect](http://github.com/hzeller/gmrender-resurrect),
-which works perfectly.
+Right now, this is tested with [gmrender-resurrect][], which works perfectly.
 
 #### Special characters
 While the titles and album names can contain the full UTF-8 characters set,
@@ -134,3 +133,4 @@ interfacing and modify lcd-display.cc
 [soldered]: https://github.com/hzeller/upnp-display/raw/master/images/soldered-small.jpg
 [connected]: https://github.com/hzeller/upnp-display/raw/master/images/outer-gpio-row-small.jpg
 [in-operation]: https://github.com/hzeller/upnp-display/raw/master/images/in-operation-small.jpg
+[gmrender-resurrect]: http://github.com/hzeller/gmrender-resurrect
