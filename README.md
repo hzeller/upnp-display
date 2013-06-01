@@ -58,6 +58,11 @@ I would suggest to first connect short cables to all LCD pins that need to be
 connected, then connect them right to left to the 13x1 header. The first two
 cables end up crossing over, all others are nicely sequenced.
 
+![Put together][soldered]
+
+Now, plug this into the outer row of your Raspberry Pi GPIO:
+![Connected][connected]
+
 ### Compile the program
 
 You need to have libupnp installed
@@ -93,6 +98,8 @@ one you're interested in with the `-n` option:
 
     sudo ./upnp-display -n "Living Room"
 
+![yay, working][in-operation]
+
 ### Compatiblity
 
 #### UPnP Renderers
@@ -123,3 +130,6 @@ than the Paspberry Pi, you don't have GPIO pins. You can change the hardware
 interfacing bit-interface in lcd-display.cc
 
 [parts]: https://github.com/hzeller/upnp-display/raw/master/images/basic-connector-small.jpg
+[soldered]: https://github.com/hzeller/upnp-display/raw/master/images/soldered-small.jpg
+[connected]: https://github.com/hzeller/upnp-display/raw/master/images/outer-gpio-row-small.jpg
+[in-operation]: https://github.com/hzeller/upnp-display/raw/master/images/in-operation-small.jpg
