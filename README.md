@@ -111,5 +111,5 @@ lcd-display.cc
 
 #### Other machines than Raspberry Pi
 If you want to connect the display in a different way, on some other computer
-than the Paspberry Pi, you need to change the hardware interfacing bit-interface
-in lcd-display.cc
+than the Paspberry Pi, you don't have GPIO pins. You can change the hardware
+interfacing bit-interface in lcd-display.cc
