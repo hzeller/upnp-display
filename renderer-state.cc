@@ -195,33 +195,43 @@ void RendererState::DecodeMetaAndInsertData_Locked(const char *didl_xml) {
 
   IXML_NodeList *variable_list = ixmlNode_getChildNodes(item_element);
 
+  std::string album_artist;
   for (const IXML_NodeList *it = variable_list; it; it = it->next) {
     const char *name = ixmlNode_getNodeName(it->nodeItem);
     const char *value = get_node_content(it->nodeItem);
+    if (!value) continue;
     if (strcmp("dc:title", name) == 0) {
-      variables_["Meta_Title"] = value ? value : "";
+      variables_["Meta_Title"] = value;
     } else if (strcmp("upnp:artist", name) == 0) {
       const char *qualifier 
         = ixmlElement_getAttribute((IXML_Element*) it->nodeItem, "role");
       if (qualifier != NULL && strcmp(qualifier, "Composer") == 0) {
-        variables_["Meta_Composer"] = value ? value : "";
+        variables_["Meta_Composer"] = value;
+      } else if (qualifier != NULL && strcmp(qualifier, "AlbumArtist") == 0) {
+        album_artist = value;
       } else {
-        variables_["Meta_Artist"] = value ? value : "";
+        variables_["Meta_Artist"] = value;
       }
     } else if (strcmp("upnp:album", name) == 0) {
-      variables_["Meta_Album"] = value ? value : "";
+      variables_["Meta_Album"] = value;
     } else if (strcmp("upnp:genre", name) == 0) {
-      variables_["Meta_Genre"] = value ? value : "";
+      variables_["Meta_Genre"] = value;
     } else if (strcmp("upnp:composer", name) == 0) {
-      variables_["Meta_Composer"] = value ? value : "";
+      variables_["Meta_Composer"] = value;
     } else if (strcmp("dc:creator", name) == 0) {
-      variables_["Meta_Creator"] = value ? value : "";
+      variables_["Meta_Creator"] = value;
     } else if (strcmp("dc:date", name) == 0) {
-      variables_["Meta_Year"] = value ? value : "";
+      variables_["Meta_Year"] = value;
       if (variables_["Meta_Year"].size() == 10) {  // proper ISO8601
         variables_["Meta_Year"].resize(4);
       }
     }
+  }
+
+  // If we don't have a specific artist, take the generic artist from the
+  // album.
+  if (variables_["Meta_Artist"].empty() && !album_artist.empty()) {
+    variables_["Meta_Artist"] = album_artist;
   }
 
   ixmlNodeList_free(variable_list);
