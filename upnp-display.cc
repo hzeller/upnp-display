@@ -32,6 +32,10 @@
 // do some basic printing on the console.
 #define USE_RASPBERRY_LCD
 
+// Time between display updates. This influences scroll speed. Note, too fast
+// scrolling looks blurry on cheap displays.
+static const int kDisplayUpdateMillis = 200;
+
 // Utility to help horizontally scroll text
 // (TODO: once we support UTF-8, we need to take character boundaries into
 // account).
@@ -100,7 +104,7 @@ public:
     std::string last_play_state;
     unsigned char blink_time = 0;
     for (;;) {
-      usleep(150000);
+      usleep(kDisplayUpdateMillis * 1000);
       bool got_var = false;
       ithread_mutex_lock(&mutex_);
       if (current_state_ != NULL) {
