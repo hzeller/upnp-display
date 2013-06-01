@@ -115,9 +115,11 @@ Right now, this is tested with [gmrender-resurrect][], which works perfectly.
 
 #### Special characters
 While the titles and album names can contain the full UTF-8 characters set,
-the LCD displays can't show them by default.
+the LCD displays can't show them by default. So right now, only ASCII characters
+are displayed well.
+
 The LCD displays allow for adding custom character bitmaps so this _could_ be
-implemented, but isn't at this time.
+implemented with some effort, but isn't at this time.
 
 #### LCD Displays
 We can't check the 'busy'-status of the LCD display, as we can't read from
