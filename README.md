@@ -2,20 +2,20 @@ LCD Display showing DNLA/UPnP player status
 -------------------------------------------
 
 This little program is a UPnP control point that connects to a UPnP/DNLA
-renderer (so the device that outputs the music/video). It listens for changes
-in the state of the player (Title, Album etc. Play/Paused/Stop) and displays
-it on a 16x2 LCD display (These displays are cheap, you get them for less than
-$3 on eBay).
+renderer anywhere in your local network.
+It listens for changes in the state of the player (Title, Album etc.,
+Play/Paused/Stop) and displays it on a 16x2 LCD display (These displays are
+cheap, you get them for less than $3 on eBay).
 
 ### Connect the Hardware
 
 Before we can see anything, we need to connect the LCD display.
 You need
-    - One HD44780 compatible 16x2 LCD display (_very_ common and cheap display)
-    - One female 13x1 header connector; one row with 13 contacts to plug into
-      one row of the Raspberry Pi GPIO pin
-    - Cable and soldering iron (Of course, you can do it the breadboard way
-      if you like)
+   - One HD44780 compatible 16x2 LCD display (_very_ common and cheap display)
+   - One female 13x1 header connector; one row with 13 contacts to plug into
+     one row of the Raspberry Pi GPIO pin
+   - Cable and soldering iron (Of course, you can do it the breadboard way
+     if you like)
 
 First: identify the pins on the LCD display. They typically have 16 connectors
 (sometimes 14 when they don't have a backlight). Pin 1 is usually closer to the
@@ -32,12 +32,13 @@ then P1-02 is to your right, P1-26 is to your left.
 Connect
    - **LCD 1** _(GND)_ to **GPIO Pin P1-06** (3nd from right, GND)
    - **LCD 2** _(+5V)_ to **GPIO Pin P1-04** (2nd from right, +5V)
-     _Note, the first two are 'crossed'_
+     _Note, the first two wires are 'crossed'_
    - **LCD 3** _(contrast)_ to **LCD 1** (GND)
        _the contrast is controllable with a resistor, but connect to GND is just
         fine_
    - **LCD 4** _(RS)_ to **GPIO Pin P1-08** (4th from right, Bit 14)
-   - **LCD 5** _(R/-W)_ to **LCD 1** _We only write to the display_
+   - **LCD 5** _(R/-W)_ to **LCD 1** _We only write to the display,
+      so we set this pin to GND_
    - **LCD 6** _(Clock or Enable)_ to **GPIO Pin P1-12** (6th from right, Bit 18)
    - LCD 7 to LCD 10 are _not connected_
    - **LCD 11** _(Data 4)_ to **GPIO Pin P1-16** (8th from right, Bit 23)
@@ -94,7 +95,7 @@ one you're interested in with the `-n` option:
 
 This should work with all renderers, that do proper eventing of variable
 changes. This program does not, at this time, actively query the renderer
-but expects it to transmit changes standard conformant.
+but expects it to transmit changes according to the UPnP eventing standard.
 
 Right now, this is tested with
 [gmrender-resurrect](http://github.com/hzeller/gmrender-resurrect)
