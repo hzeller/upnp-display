@@ -76,7 +76,9 @@ bool LCDDisplay::Init() {
   // Transition to 4 bit mode. First nibble-write is 8-bit, then 4-bit
   WriteNibble(true, 0x03);
   WriteNibble(true, 0x02);
+  usleep(100);
 
+  // From now on, we can write full bytes that we transfer in nibbles.
   WriteByte(true, 0x28);  // function set: 4-bit mode, two lines, 5x8 font
   usleep(100);
   WriteByte(true, 0x06);  // entry mode: increment, no shift
@@ -91,18 +93,20 @@ bool LCDDisplay::Init() {
   return true;
 }
 
-void LCDDisplay::Print(int line, const std::string &text) {
+void LCDDisplay::Print(int row, const std::string &text) {
   assert(initialized_);  // call Init() first.
-  assert(line < 2);      // uh, out of range.
-  if (last_line_[line] == text) return;  // nothing to update.
+  assert(row < 2);      // uh, out of range.
+
+  if (last_line_[row] == text)
+    return;  // nothing to update.
 
   // Since we can't read (5V display, but GPIO only accepts 3.3V), we
   // can't read the 'busy' flag - so we need be conservative and wait
   // sufficiently between commands.
 
   // Set address to write to; line 2 starts at 0x40
-  WriteByte(true, 0x80 + ((line > 0) ? 0x40 : 0));
-  usleep(2000);
+  WriteByte(true, 0x80 + ((row > 0) ? 0x40 : 0));
+  usleep(2500);
 
   for (int i = 0; i < 16 && i < (int)text.length(); ++i) {
     WriteByte(false, text[i]);
@@ -113,5 +117,5 @@ void LCDDisplay::Print(int line, const std::string &text) {
     WriteByte(false, ' ');
     usleep(2000);
   }
-  last_line_[line] = text;
+  last_line_[row] = text;
 };

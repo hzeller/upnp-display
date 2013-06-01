@@ -28,53 +28,55 @@
 #include "renderer-state.h"
 #include "lcd-display.h"
 
-class UIFormatter : public ControllerObserver {
-  class Scroller {
-    static const int kBorderWait = 4;  // ticks to wait at end-of-scroll
-  public:
-    Scroller() : pos_(0), scroll_timeout_(0) {}
+// Utility to help horizontally scroll text
+class Scroller {
+  static const int kBorderWait = 4;  // ticks to wait at end-of-scroll
+public:
+  Scroller() : pos_(0), scroll_timeout_(0) {}
 
-    void SetValue(std::string &content, int width) {
-      if (content != content_ || width != width_) {
-        content_ = content;
-        width_ = width;
+  void SetValue(std::string &content, int width) {
+    if (content != content_ || width != width_) {
+      content_ = content;
+      width_ = width;
+      pos_ = 0;
+      scroll_timeout_ = kBorderWait;
+    }
+  }
+
+  std::string GetScrolledContent() {
+    return content_.substr(pos_, width_);
+  }
+
+  void Advance() {
+    if (scroll_timeout_ > 0) {
+      scroll_timeout_--;
+    } else {
+      pos_++;
+      const int display_portion = content_.length() - pos_;
+      if (display_portion == width_) {
+        scroll_timeout_ = kBorderWait;
+      } else if (display_portion < width_) {
         pos_ = 0;
         scroll_timeout_ = kBorderWait;
       }
     }
+  }
 
-    std::string GetScrolledContent() {
-      return content_.substr(pos_, width_);
-    }
+private:
+  int width_;
+  std::string content_;
+  int pos_;
+  int scroll_timeout_;
+};
 
-    void Advance() {
-      if (scroll_timeout_ > 0) {
-        scroll_timeout_--;
-      } else {
-        pos_++;
-        const int display_portion = content_.length() - pos_;
-        if (display_portion == width_) {
-          scroll_timeout_ = kBorderWait;
-        } else if (display_portion < width_) {
-          pos_ = 0;
-          scroll_timeout_ = kBorderWait;
-        }
-      }
-    }
-
-  private:
-    int width_;
-    std::string content_;
-    int pos_;
-    int scroll_timeout_;
-  };
-
+// The actual 'UI': wait for matching
+class UIFormatter : public ControllerObserver {
 public:
   UIFormatter(const std::string &friendly_name, Printer *printer)
-    : match_name_(friendly_name), printer_(printer), current_state_(NULL) {
+    : player_name_(friendly_name), printer_(printer), current_state_(NULL) {
     ithread_mutex_init(&mutex_, NULL);
     printer_->Print(0, "Waiting for");
-    std::string to_print = match_name_.empty() ? "any Renderer" : match_name_;
+    std::string to_print = player_name_.empty() ? "any Renderer" : player_name_;
     CenterAlign(&to_print, printer_->width());
     printer_->Print(1, to_print);
   }
@@ -116,11 +118,22 @@ public:
       std::string print_line = composer;
       if (!print_line.empty()) print_line.append(":");
       print_line.append(title);
+
       if (print_line.empty()) {
         // Nothing else to display ? Say play-state.
-        if (play_state == "STOPPED")         print_line = "[Stopped]";
+        print_line = player_name_;
+        CenterAlign(&print_line, printer_->width());
+        printer_->Print(0, print_line);
+
+        print_line = play_state;
+        if (play_state == "STOPPED")              print_line = "[Stopped]";
         else if (play_state == "PAUSED_PLAYBACK") print_line = "[Paused]";
+        CenterAlign(&print_line, printer_->width());
+        printer_->Print(1, print_line);
+        continue;
       }
+
+      // Alright, we have a title, print that.
       CenterAlign(&print_line, printer_->width());
       first_line_scroller.SetValue(print_line, printer_->width());
       printer_->Print(0, first_line_scroller.GetScrolledContent());
@@ -154,20 +167,17 @@ public:
   virtual void AddRenderer(const std::string &uuid,
                            const RendererState *state) {
     if (current_state_ == NULL
-        && (match_name_.empty() || match_name_ == state->friendly_name())) {
+        && (player_name_.empty() || player_name_ == state->friendly_name())) {
       ithread_mutex_lock(&mutex_);
       uuid_ = uuid;
       current_state_ = state;
       ithread_mutex_unlock(&mutex_);
-      printer_->Print(0, "Connected to");
-      printer_->Print(1, state->friendly_name());
+      // This is a different thread than main(); don't print anything here.
     }
   }
 
   virtual void RemoveRenderer(const std::string &uuid) {
     if (current_state_ != NULL && uuid == uuid_) {
-      printer_->Print(0, "Disconnected");
-      printer_->Print(1, current_state_->friendly_name());
       ithread_mutex_lock(&mutex_);
       current_state_ = NULL;
       ithread_mutex_unlock(&mutex_);
@@ -214,7 +224,7 @@ private:
     }
   }
 
-  const std::string match_name_;
+  const std::string player_name_;
   Printer *const printer_;
   ithread_mutex_t mutex_;
 
