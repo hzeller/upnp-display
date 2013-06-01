@@ -17,6 +17,8 @@ You need
    - Cable and soldering iron (Of course, you can do it the breadboard way
      if you like)
 
+![LCD Display and connector][parts]
+
 First: identify the pins on the LCD display. They typically have 16 connectors
 (sometimes 14 when they don't have a backlight). Pin 1 is usually closer to the
 edge of the board. Often marked with a '1' or a dot.
@@ -119,3 +121,5 @@ lcd-display.cc
 If you want to connect the display in a different way, on some other computer
 than the Paspberry Pi, you don't have GPIO pins. You can change the hardware
 interfacing bit-interface in lcd-display.cc
+
+[parts]: https://github.com/hzeller/upnp-display/raw/master/images/basic-connector-small
