@@ -28,6 +28,10 @@
 #include "renderer-state.h"
 #include "lcd-display.h"
 
+// Comment this out, if you don't run this on a Raspberry Pi; then it will
+// do some basic printing on the console.
+#define USE_RASPBERRY_LCD
+
 // Utility to help horizontally scroll text
 // (TODO: once we support UTF-8, we need to take character boundaries into
 // account).
@@ -256,13 +260,16 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  //ConsolePrinter printer;
+#ifdef USE_RASPBERRY_LCD
   LCDDisplay printer;
   if (!printer.Init()) {
     fprintf(stderr, "You need to run this as root to have access to GPIO pins. "
             "Run with sudo.\n");
     return 1;
   }
+#else
+  ConsolePrinter printer;
+#endif
 
   // TODO: drop priviliges
 
