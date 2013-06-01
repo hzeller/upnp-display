@@ -11,9 +11,9 @@ cheap, you get them for less than $3 on eBay).
 
 Before we can see anything, we need to connect the LCD display.
 You need
-   - One HD44780 compatible 16x2 LCD display (_very_ common and cheap display)
-   - One female 13x1 header connector; one row with 13 contacts to plug into
-     one row of the Raspberry Pi GPIO pin
+   - One HD44780 compatible 16x2 LCD display ( _very_ common and cheap display)
+   - One female 13x1 header connector: one row with 13 contacts to plug into
+     one row of the Raspberry Pi GPIO header.
    - Cable and soldering iron (Of course, you can do it the breadboard way
      if you like)
 
@@ -79,12 +79,12 @@ it:
 
 ### Start the program
 
-You need to start the program as root, as it needs to connect to the GPIO pins.
+You need to start the program as root, as it needs to access the GPIO pins:
 
     sudo ./upnp-display
 
-It should now display that it is waiting for any renderer; once it found a
-renderer, it will display its state in the display.
+In the LCD display, it should now print that it is waiting for any renderer;
+once it found a renderer, it will display the title/album playing.
 
 If you have multiple renderers in your network, you can select the particular
 one you're interested in with the `-n` option:
