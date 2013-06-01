@@ -228,8 +228,7 @@ void RendererState::DecodeMetaAndInsertData_Locked(const char *didl_xml) {
     }
   }
 
-  // If we don't have a specific artist, take the generic artist from the
-  // album.
+  // If we don't have a specific artist, take the generic artist of the album.
   if (variables_["Meta_Artist"].empty() && !album_artist.empty()) {
     variables_["Meta_Artist"] = album_artist;
   }
