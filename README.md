@@ -122,4 +122,4 @@ If you want to connect the display in a different way, on some other computer
 than the Paspberry Pi, you don't have GPIO pins. You can change the hardware
 interfacing bit-interface in lcd-display.cc
 
-[parts]: https://github.com/hzeller/upnp-display/raw/master/images/basic-connector-small
+[parts]: https://github.com/hzeller/upnp-display/raw/master/images/basic-connector-small.jpg
