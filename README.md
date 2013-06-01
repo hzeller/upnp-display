@@ -102,8 +102,8 @@ one you're interested in with the `-n` option:
 
     sudo ./upnp-display -n "Living Room"
 
-Now, if you use your entertainment system the usual way, now have an additional
-system that shows what currently is played. You can deploy this multiple times
+Now, if you use your entertainment system the usual way, this display
+shows what currently is played. You can deploy this multiple times
 in the same network, so you can have one display in every room :)
 
 ![yay, working][in-operation]
