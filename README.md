@@ -139,6 +139,6 @@ interfacing and modify lcd-display.cc
 
 [parts]: https://github.com/hzeller/upnp-display/raw/master/images/basic-connector-small.jpg
 [soldered]: https://github.com/hzeller/upnp-display/raw/master/images/soldered-small.jpg
-[connected]: https://github.com/hzeller/upnp-display/raw/master/images/outer-gpio-row-small.jpg
+[connected]: https://github.com/hzeller/upnp-display/raw/master/images/plugged-in-small.jpg
 [in-operation]: https://github.com/hzeller/upnp-display/raw/master/images/in-operation-small.jpg
 [gmrender-resurrect]: http://github.com/hzeller/gmrender-resurrect
