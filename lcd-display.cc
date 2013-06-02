@@ -101,10 +101,6 @@ void LCDDisplay::Print(int row, const std::string &text) {
   if (last_line_[row] == text)
     return;  // nothing to update.
 
-  // Since we can't read (5V display, but GPIO only accepts 3.3V), we
-  // can't read the 'busy' flag - so we need be conservative and wait
-  // sufficiently between commands.
-
   // Set address to write to; line 2 starts at 0x40
   WriteByte(true, 0x80 + ((row > 0) ? 0x40 : 0));
 
