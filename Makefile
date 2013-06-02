@@ -10,7 +10,7 @@ CXXFLAGS=-g -Wall $(INCLUDES)
 upnp-display: $(OBJECTS)
 	g++ -Wall $^ $(LIBS) -o $@
 
-font-data.c : font/5x8.bdf
+font-data.c : font/5x8.bdf font/font2c.awk
 	awk -f font/font2c.awk < $< > $@
 
 clean :
