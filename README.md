@@ -127,10 +127,11 @@ implemented with some effort, but isn't at this time.
 
 #### LCD Displays
 Most displays you can get are HD44780 compatible; There are as well
-24x2 and 40x2 displays available (for not much more money). I found that 16
+24x2 and 40x2 displays available (also pretty cheap). I found that 16
 characters is a bit on the low side to display a useful amount without constant
 scrolling. If you get another display, change the #define LCD_DISPLAY_WIDTH in
-upnp-display.cc.
+upnp-display.cc. Usually, the pin-out looks a bit different, but typically it
+has the same data lines - check your data sheet.
 
 We can't check the 'busy'-status of the LCD display, as we can't read from
 the interface (the LCD operats at 5V and the GPIO pins only tolerate 3.3V). Hence
