@@ -56,7 +56,7 @@ static void WriteByte(bool is_command, uint8_t b) {
   WriteNibble(is_command, b & 0xf);
 }
 
-LCDDisplay::LCDDisplay() : initialized_(false) {
+LCDDisplay::LCDDisplay(int width) : width_(width), initialized_(false) {
 }
 
 bool LCDDisplay::Init() {

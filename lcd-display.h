@@ -26,15 +26,18 @@
 // connected to RPi GPIO pins.
 class LCDDisplay : public Printer {
 public:
-  LCDDisplay();
+  LCDDisplay(int width);
 
   // Call this first.
   bool Init();
+
+  virtual int width() const { return width_; }
 
   // Print text in given line.
   virtual void Print(int line, const std::string &text);
 
 private:
+  const int width_;
   bool initialized_;
   std::string last_line_[2];
 };

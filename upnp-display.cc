@@ -32,6 +32,10 @@
 // do some basic printing on the console.
 #define USE_RASPBERRY_LCD
 
+// Width of your display. Usually this is just 16 wide, but you can get 24 or
+// even 40 wide displays.
+#define LCD_DISPLAY_WIDTH 16
+
 // Time between display updates. This influences scroll speed. Note, too fast
 // scrolling looks blurry on cheap displays.
 static const int kDisplayUpdateMillis = 200;
@@ -265,7 +269,7 @@ int main(int argc, char *argv[]) {
   }
 
 #ifdef USE_RASPBERRY_LCD
-  LCDDisplay printer;
+  LCDDisplay printer(LCD_DISPLAY_WIDTH);
   if (!printer.Init()) {
     fprintf(stderr, "You need to run this as root to have access to GPIO pins. "
             "Run with sudo.\n");
