@@ -126,6 +126,13 @@ The LCD displays allow for having some custom character bitmaps. There is
 work-in-progres to actually support unicode characters soon.
 
 #### LCD Displays
+Most displays you can get are HD44780 compatible; There are as well
+24x2 and 40x2 displays available (also pretty cheap). I found that 16
+characters is a bit on the low side to display a useful amount without constant
+scrolling. If you get another display, change the #define LCD_DISPLAY_WIDTH in
+upnp-display.cc. Usually, the pin-out looks a bit different, but typically it
+has the same data lines - check your data sheet.
+
 We can't check the 'busy'-status of the LCD display, as we can't read from
 the interface (the LCD operats at 5V and the GPIO pins only tolerate 3.3V). Hence
 the handshake to the display is ensured by waiting after each write which should
@@ -139,6 +146,6 @@ interfacing and modify lcd-display.cc
 
 [parts]: https://github.com/hzeller/upnp-display/raw/master/images/basic-connector-small.jpg
 [soldered]: https://github.com/hzeller/upnp-display/raw/master/images/soldered-small.jpg
-[connected]: https://github.com/hzeller/upnp-display/raw/master/images/outer-gpio-row-small.jpg
+[connected]: https://github.com/hzeller/upnp-display/raw/master/images/plugged-in-small.jpg
 [in-operation]: https://github.com/hzeller/upnp-display/raw/master/images/in-operation-small.jpg
 [gmrender-resurrect]: http://github.com/hzeller/gmrender-resurrect

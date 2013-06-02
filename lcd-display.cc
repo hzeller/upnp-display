@@ -56,7 +56,7 @@ static void WriteByte(bool is_command, uint8_t b) {
   WriteNibble(is_command, b & 0xf);
 }
 
-LCDDisplay::LCDDisplay() : initialized_(false) {
+LCDDisplay::LCDDisplay(int width) : width_(width), initialized_(false) {
 }
 
 bool LCDDisplay::Init() {
@@ -106,16 +106,16 @@ void LCDDisplay::Print(int row, const std::string &text) {
 
   // Set address to write to; line 2 starts at 0x40
   WriteByte(true, 0x80 + ((row > 0) ? 0x40 : 0));
-  usleep(2500);
+  usleep(100);
 
   for (int i = 0; i < 16 && i < (int)text.length(); ++i) {
     WriteByte(false, text[i]);
-    usleep(2000);
+    usleep(100);
   }
   // Fill rest with spaces.
   for (int i = text.length(); i < 16; ++i) {
     WriteByte(false, ' ');
-    usleep(2000);
+    usleep(100);
   }
   last_line_[row] = text;
 };
