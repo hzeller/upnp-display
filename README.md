@@ -122,8 +122,8 @@ While the titles and album names can contain the full UTF-8 characters set,
 the LCD displays can't show them by default. So right now, only ASCII characters
 are displayed well.
 
-The LCD displays allow for adding custom character bitmaps so this _could_ be
-implemented with some effort, but isn't at this time.
+The LCD displays allow for having some custom character bitmaps. There is
+work-in-progres to actually support unicode characters soon.
 
 #### LCD Displays
 We can't check the 'busy'-status of the LCD display, as we can't read from
