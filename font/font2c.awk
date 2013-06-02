@@ -21,7 +21,7 @@ BEGIN {
 }
 
 /^ENDCHAR/                {
-    printf("}}, // U+%04x %s\n", enc, val);
+    printf("}}, // U+%04X %s\n", enc, val);
     in_bitmap=0; count++; 
 }
 
