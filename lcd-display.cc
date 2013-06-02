@@ -27,6 +27,9 @@
 
 GPIO gpio;
 
+// According to datasheet, basic ops are typically ~37usec
+#define LCD_DISPLAY_OPERATION_WAIT_USEC 50
+
 #define LCD_E (1<<18)
 #define LCD_RS (1<<14)
 
@@ -49,13 +52,12 @@ static void WriteNibble(bool is_command, uint8_t b) {
   gpio.Write(out);
 }
 
-// Write data to display.
+// Write data to display. Differentiates if this is a command byte or data
+// byte.
 static void WriteByte(bool is_command, uint8_t b) {
   WriteNibble(is_command, (b >> 4) & 0xf);
   WriteNibble(is_command, b & 0xf);
-  // According to datasheet, ops are typically at least ~37usec
-  // (some are more (e.g "clear screen"), then caller needs to add extra sleep).
-  usleep(50);
+  usleep(LCD_DISPLAY_OPERATION_WAIT_USEC);
 }
 
 LCDDisplay::LCDDisplay(int width) : width_(width), initialized_(false) {
@@ -78,7 +80,7 @@ bool LCDDisplay::Init() {
 
   // Transition to 4 bit mode.
   WriteNibble(true, 0x02); // Interpreted as 0x20: 8-bit cmd to switch to 4-bit.
-  usleep(100);
+  usleep(LCD_DISPLAY_OPERATION_WAIT_USEC);
 
   // From now on, we can write full bytes that we transfer in nibbles.
   WriteByte(true, 0x28);  // Function set: 4-bit mode, two lines, 5x8 font
