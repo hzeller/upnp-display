@@ -26,5 +26,5 @@ BEGIN {
 }
 
 END {
-    printf("};\nuint32_t kFontDataSize = %i;\n", count);
+    printf("};\nuint32_t kFontDataSize = %d;\n", count);
 }
