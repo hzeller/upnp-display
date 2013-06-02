@@ -30,7 +30,7 @@ GPIO gpio;
 #define LCD_E (1<<18)
 #define LCD_RS (1<<14)
 
-// We have the bits assigned in an unusal pattern to have everything straight
+// We have the bits assigned in an unusal pattern to accomodate simple wiring.
 #define LCD_D0_BIT (1<<23)
 #define LCD_D1_BIT (1<<24)
 #define LCD_D2_BIT (1<<25)
@@ -44,16 +44,18 @@ static void WriteNibble(bool is_command, uint8_t b) {
   out |= (b & 0x8) ? LCD_D3_BIT : 0;
   out |= LCD_E;
   gpio.Write(out);
-  usleep(5);
+  usleep(1);      // > 230ns
   out &= ~LCD_E;
   gpio.Write(out);
-  usleep(5);
 }
 
 // Write data to display.
 static void WriteByte(bool is_command, uint8_t b) {
   WriteNibble(is_command, (b >> 4) & 0xf);
   WriteNibble(is_command, b & 0xf);
+  // According to datasheet, ops are typically at least ~37usec
+  // (some are more (e.g "clear screen"), then caller needs to add extra sleep).
+  usleep(50);
 }
 
 LCDDisplay::LCDDisplay(int width) : width_(width), initialized_(false) {
@@ -66,28 +68,25 @@ bool LCDDisplay::Init() {
   gpio.InitOutputs(LCD_E | LCD_RS |
                    LCD_D0_BIT | LCD_D1_BIT | LCD_D2_BIT | LCD_D3_BIT);
 
-  // -- this seems to be a reliable initialization sequence.
+  // -- This seems to be a reliable initialization sequence:
 
   // Start with 8 bit mode, then instruct to switch to 4 bit mode.
   WriteNibble(true, 0x03);
-  usleep(5000);
+  usleep(5000);            // If we were in 4 bit mode, timeout makes this 0x30
   WriteNibble(true, 0x03);
   usleep(5000);
-  // Transition to 4 bit mode. First nibble-write is 8-bit, then 4-bit
-  WriteNibble(true, 0x03);
-  WriteNibble(true, 0x02);
+
+  // Transition to 4 bit mode.
+  WriteNibble(true, 0x02); // Interpreted as 0x20: 8-bit cmd to switch to 4-bit.
   usleep(100);
 
   // From now on, we can write full bytes that we transfer in nibbles.
-  WriteByte(true, 0x28);  // function set: 4-bit mode, two lines, 5x8 font
-  usleep(100);
-  WriteByte(true, 0x06);  // entry mode: increment, no shift
-  usleep(100);
-  WriteByte(true, 0x0c);  // display control: on, no cursor
-  usleep(100);
+  WriteByte(true, 0x28);  // Function set: 4-bit mode, two lines, 5x8 font
+  WriteByte(true, 0x06);  // Entry mode: increment, no shift
+  WriteByte(true, 0x0c);  // Display control: on, no cursor
 
-  WriteByte(true, 0x01);  // clear display
-  usleep(2000);
+  WriteByte(true, 0x01);  // Clear display
+  usleep(2000);           // ... which takes up to 1.6ms
 
   initialized_ = true;
   return true;
@@ -95,7 +94,7 @@ bool LCDDisplay::Init() {
 
 void LCDDisplay::Print(int row, const std::string &text) {
   assert(initialized_);  // call Init() first.
-  assert(row < 2);      // uh, out of range.
+  assert(row < 2);       // uh, out of range.
 
   if (last_line_[row] == text)
     return;  // nothing to update.
@@ -106,16 +105,13 @@ void LCDDisplay::Print(int row, const std::string &text) {
 
   // Set address to write to; line 2 starts at 0x40
   WriteByte(true, 0x80 + ((row > 0) ? 0x40 : 0));
-  usleep(100);
 
   for (int i = 0; i < 16 && i < (int)text.length(); ++i) {
     WriteByte(false, text[i]);
-    usleep(100);
   }
   // Fill rest with spaces.
   for (int i = text.length(); i < 16; ++i) {
     WriteByte(false, ' ');
-    usleep(100);
   }
   last_line_[row] = text;
 };
