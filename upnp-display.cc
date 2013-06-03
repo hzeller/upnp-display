@@ -200,6 +200,7 @@ public:
   }
 
   virtual void RemoveRenderer(const std::string &uuid) {
+    printf("disconnect (uuid=%s)\n", uuid.c_str());
     if (current_state_ != NULL && uuid == uuid_) {
       ithread_mutex_lock(&mutex_);
       current_state_ = NULL;
