@@ -90,12 +90,6 @@ public:
     : player_match_name_(friendly_name),
       printer_(printer), current_state_(NULL) {
     ithread_mutex_init(&mutex_, NULL);
-    printer_->Print(0, "Waiting for");
-    std::string to_print = (player_match_name_.empty()
-                            ? "any Renderer"
-                            : player_match_name_);
-    CenterAlign(&to_print, printer_->width());
-    printer_->Print(1, to_print);
   }
   
   void Loop() {
@@ -127,8 +121,15 @@ public:
         got_var = true;
       }
       ithread_mutex_unlock(&mutex_);
-      if (!got_var)
+      if (!got_var) {
+        printer_->Print(0, "Waiting for");
+        std::string to_print = (player_match_name_.empty()
+                                ? "any Renderer"
+                                : player_match_name_);
+        CenterAlign(&to_print, printer_->width());
+        printer_->Print(1, to_print);
         continue;
+      }
 
       if (play_state != last_play_state) {
         blink_time = 0;
