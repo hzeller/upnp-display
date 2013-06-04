@@ -27,6 +27,7 @@
 #include "printer.h"
 #include "renderer-state.h"
 #include "lcd-display.h"
+#include "scroller.h"
 
 // Comment this out, if you don't run this on a Raspberry Pi; then it will
 // do some basic printing on the console.
@@ -39,49 +40,6 @@
 // Time between display updates. This influences scroll speed. Note, too fast
 // scrolling looks blurry on cheap displays.
 static const int kDisplayUpdateMillis = 200;
-
-// Utility to help horizontally scroll text
-// (TODO: once we support UTF-8, we need to take character boundaries into
-// account).
-class Scroller {
-  static const int kBorderWait = 4;  // ticks to wait at end-of-scroll
-public:
-  Scroller() : pos_(0), scroll_timeout_(0) {}
-
-  void SetValue(std::string &content, int width) {
-    if (content != content_ || width != width_) {
-      content_ = content;
-      width_ = width;
-      pos_ = 0;
-      scroll_timeout_ = kBorderWait;
-    }
-  }
-
-  std::string GetScrolledContent() {
-    return content_.substr(pos_, width_);
-  }
-
-  void Advance() {
-    if (scroll_timeout_ > 0) {
-      scroll_timeout_--;
-    } else {
-      pos_++;
-      const int display_portion = content_.length() - pos_;
-      if (display_portion == width_) {
-        scroll_timeout_ = kBorderWait;
-      } else if (display_portion < width_) {
-        pos_ = 0;
-        scroll_timeout_ = kBorderWait;
-      }
-    }
-  }
-
-private:
-  int width_;
-  std::string content_;
-  int pos_;
-  int scroll_timeout_;
-};
 
 // The actual 'UI': wait for matching
 class UIFormatter : public ControllerObserver {
@@ -179,8 +137,8 @@ public:
                       + second_line_scroller.GetScrolledContent());
 
       blink_time++;
-      first_line_scroller.Advance();
-      second_line_scroller.Advance();
+      first_line_scroller.NextTick();
+      second_line_scroller.NextTick();
     }
   }
 
