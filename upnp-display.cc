@@ -39,7 +39,7 @@
 
 // Time between display updates. This influences scroll speed. Note, too fast
 // scrolling looks blurry on cheap displays.
-static const int kDisplayUpdateMillis = 200;
+static const int kDisplayUpdateMillis = 400;
 
 // The actual 'UI': wait for matching
 class UIFormatter : public ControllerObserver {
@@ -120,7 +120,7 @@ public:
       if (play_state != "STOPPED") {
         formatted_time = formatTime(time);
         // 'Blinking' time when paused.
-        if (play_state == "PAUSED_PLAYBACK" && (blink_time / 2) % 2 == 0) {
+        if (play_state == "PAUSED_PLAYBACK" && blink_time % 2 == 0) {
           formatted_time = std::string(formatted_time.size(), ' ');
         }
       }

@@ -17,13 +17,16 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "lcd-display.h"
-#include "gpio.h"
 
 #include <assert.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <stdio.h>
+
+#include "gpio.h"
+#include "font-data.h"
+#include "utfcpp/utf8.h"
 
 GPIO gpio;
 
@@ -60,7 +63,54 @@ static void WriteByte(bool is_command, uint8_t b) {
   usleep(LCD_DISPLAY_OPERATION_WAIT_USEC);
 }
 
-LCDDisplay::LCDDisplay(int width) : width_(width), initialized_(false) {
+const static Font5x8 *findFont(const uint32_t codepoint) {
+  int lo = 0, hi = kFontDataSize;
+  int pos;
+  for (pos = (hi + lo) / 2; hi > lo; pos = (hi + lo) / 2) {
+    if (codepoint > kFontData[pos].codepoint)
+      lo = pos + 1;
+    else
+      hi = pos;
+  }
+  return (kFontData[pos].codepoint == codepoint) ? &kFontData[pos] : NULL;
+}
+
+static void RegisterFont(int num, const Font5x8 *font) {
+  assert(font);
+  assert(num < 8);
+  for (int i = 0; i < 8; ++i) {
+    WriteByte(true, 0x40 + (num << 3) + i);
+    WriteByte(false, font->bitmap[i] >> 3);
+  }
+}
+
+uint8_t LCDDisplay::FindCharacterFor(Codepoint cp, bool *register_new) {
+  *register_new = false;
+  if (cp < 0x7F) return cp;
+
+  // Conceptually, we need a map codepoint -> char; but this is a really small
+  // list, so this is faster to iterate than having a bulky map.
+  for (int i = 0; i < 8; ++i) {
+    if (special_characters_[i] == cp) return i;
+  }
+
+  // Ok, not there, just use the next free. We're doing a very simple
+  // round-robin approach here, potentially re-using characters that are
+  // still in use. For now, we just assume that the active number of different
+  // characters is small enough to fit.
+  const Font5x8 *font = findFont(cp);
+  if (font == NULL) return '?';  // unicode without font.
+
+  const uint32_t new_char = (next_free_special_++ % 8);
+  RegisterFont(new_char, font);
+  *register_new = true;
+  special_characters_[new_char] = cp;
+  return new_char;
+}
+
+LCDDisplay::LCDDisplay(int width) : width_(width), initialized_(false),
+                                    next_free_special_(0) {
+  memset(special_characters_, 0, sizeof(special_characters_));
 }
 
 bool LCDDisplay::Init() {
@@ -91,6 +141,7 @@ bool LCDDisplay::Init() {
   usleep(2000);           // ... which takes up to 1.6ms
 
   initialized_ = true;
+
   return true;
 }
 
@@ -104,11 +155,19 @@ void LCDDisplay::Print(int row, const std::string &text) {
   // Set address to write to; line 2 starts at 0x40
   WriteByte(true, 0x80 + ((row > 0) ? 0x40 : 0));
 
-  for (int i = 0; i < 16 && i < (int)text.length(); ++i) {
-    WriteByte(false, text[i]);
+  std::string::const_iterator it = text.begin();
+  int screen_pos = 0;
+  for (screen_pos = 0; screen_pos < width_ && it != text.end(); ++screen_pos) {
+    const uint32_t codepoint = utf8::unchecked::next(it);
+    bool ddram_dirty = false;
+    uint8_t char_to_print = FindCharacterFor(codepoint, &ddram_dirty);
+    if (ddram_dirty) {
+      WriteByte(true, 0x80 + ((row > 0) ? 0x40 : 0) + screen_pos);
+    }
+    WriteByte(false, char_to_print);
   }
   // Fill rest with spaces.
-  for (int i = text.length(); i < 16; ++i) {
+  for (int i = screen_pos; i < width_; ++i) {
     WriteByte(false, ' ');
   }
   last_line_[row] = text;

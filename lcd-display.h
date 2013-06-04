@@ -19,6 +19,7 @@
 #define UPNP_DISPLAY_LCD_
 
 #include <string>
+#include <stdint.h>
 
 #include "printer.h"
 
@@ -37,9 +38,16 @@ public:
   virtual void Print(int line, const std::string &text);
 
 private:
+  typedef uint32_t Codepoint;
+
+  uint8_t FindCharacterFor(Codepoint cp, bool *register_new);
+
   const int width_;
   bool initialized_;
   std::string last_line_[2];
+
+  Codepoint special_characters_[8];  // cgram -> codepoint
+  int next_free_special_;
 };
 
 #endif // UPNP_DISPLAY_LCD_
