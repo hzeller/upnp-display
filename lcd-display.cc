@@ -26,7 +26,7 @@
 
 #include "gpio.h"
 #include "font-data.h"
-#include "utfcpp/utf8.h"
+#include "utf8.h"
 
 GPIO gpio;
 
@@ -165,7 +165,7 @@ void LCDDisplay::Print(int row, const std::string &text) {
   std::string::const_iterator it = text.begin();
   int screen_pos = 0;
   for (screen_pos = 0; screen_pos < width_ && it != text.end(); ++screen_pos) {
-    const uint32_t codepoint = utf8::unchecked::next(it);
+    const uint32_t codepoint = utf8_next_codepoint(it);
     bool ddram_dirty = false;
     uint8_t char_to_print = FindCharacterFor(codepoint, &ddram_dirty);
     if (ddram_dirty) {

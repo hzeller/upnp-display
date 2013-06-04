@@ -18,7 +18,7 @@
 
 #include "scroller.h"
 
-#include "utfcpp/utf8.h"
+#include "utf8.h"
 
 static const int kBorderWait = 4;  // ticks to wait at end-of-scroll
 
@@ -31,7 +31,7 @@ void Scroller::InitIterators() {
   int i;
   for (i = 0;
        i < width_ && print_end_ != scroll_content_.end();
-       ++i, utf8::unchecked::next(print_end_)) {
+       ++i, utf8_next_codepoint(print_end_)) {
   }
   characters_on_screen_ = i;
 }
@@ -64,7 +64,7 @@ std::string Scroller::GetScrolledContent() {
   std::string::iterator print_prefix = scroll_content_.begin();
   while (char_printed < width_) {
     ++char_printed;
-    utf8::unchecked::next(print_prefix);
+    utf8_next_codepoint(print_prefix);
   }
   result.append(scroll_content_.begin(), print_prefix);
 
@@ -78,13 +78,13 @@ void Scroller::NextTick() {
   if (scroll_timeout_ > 0) {
     scroll_timeout_--;
   } else {
-    utf8::unchecked::next(print_start_);
+    utf8_next_codepoint(print_start_);
     --characters_on_screen_;   // one reduced in front
     if (print_start_ == scroll_content_.end()) {
       InitIterators();
       scroll_timeout_ = kBorderWait;
     } else if (print_end_ != scroll_content_.end()) {
-      utf8::unchecked::next(print_end_);
+      utf8_next_codepoint(print_end_);
       ++characters_on_screen_; // one added at end.
       if (print_end_ == end_of_content_) {
         scroll_timeout_ = kBorderWait;
