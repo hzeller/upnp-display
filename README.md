@@ -123,9 +123,10 @@ limited for international titles or artist names.
 
 Luckily, these displays have a way to have up to 8 user defined characters. We
 are using this feature to upload a font for characters outside the ASCII range
-(Uses the excellent [Public Domain fixed Unicode font][ucs-fixed]).
+(uses the excellent [Public Domain fixed Unicode font][ucs-fixed] maintained by
+Markus Kuhn).
 
-This works of course only well if there are less than 8 different non-ASCII
+This works of course only well if there are not more than 8 different non-ASCII
 characters on the screen - if you have song titles that are all outside this
 range (e.g. your language uses an entirely different script), then this is likely
 to fail.
@@ -134,6 +135,9 @@ Here you see an example that uses the non-ASCII characters
 &auml;, &uuml; and &szlig;
 
 ![UTF-8 display][utf-8-display]
+
+(If there is enough demand, I can separate out the unicode-aware display writing
+into a separate libray).
 
 #### LCD Displays
 Most displays you can get are HD44780 compatible; There are as well
