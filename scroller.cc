@@ -22,26 +22,33 @@
 
 static const int kBorderWait = 4;  // ticks to wait at end-of-scroll
 
-static const char kInterlude[] = "   *   ";  // between scrolls.
+static const char kInterlude[] = "   |   ";  // between scrolls.
 
 Scroller::Scroller() : characters_on_screen_(0), scroll_timeout_(0) {}
 
 void Scroller::InitIterators() {
-  print_start_ = content_.begin();
+  print_start_ = scroll_content_.begin();
   print_end_ = print_start_;
   int i;
   for (i = 0;
-       i < width_ && print_end_ != content_.end();
+       i < width_ && print_end_ != scroll_content_.end();
        ++i, utf8::unchecked::next(print_end_)) {
   }
   characters_on_screen_ = i;
 }
 
 void Scroller::SetValue(std::string &content, int width) {
-  if (content != content_ || width != width_) {
-    content_ = content;
+  if (content != orig_content_ || width != width_) {
+    orig_content_ = content;
+    scroll_content_ = orig_content_;
     width_ = width;
     InitIterators();
+    scrolling_needed_ = (print_end_ != scroll_content_.end());
+    if (scrolling_needed_) {
+      scroll_content_ = orig_content_ + kInterlude;
+      InitIterators();
+    }
+    end_of_content_ = scroll_content_.begin() + orig_content_.length();
     scroll_timeout_ = kBorderWait;
   }
 }
@@ -49,46 +56,38 @@ void Scroller::SetValue(std::string &content, int width) {
 std::string Scroller::GetScrolledContent() {
   std::string result;
   result.append(print_start_, print_end_);
-  if (print_start_ == content_.begin() && print_end_ == content_.end())
-    return result;  // fits entirely in screen. No scrolling/interlude needed.
+  if (!scrolling_needed_)
+    return result;
 
-  // If we have reached end of string, but there is still width left, interlude
-  // to the next beginning with some spacing string.
   int char_printed = characters_on_screen_;
-  const char *inter = kInterlude;
-  for (/**/; char_printed < width_ && *inter; ++char_printed, ++inter) {
-    result.append(1, *inter);
-  }
-
-  // Reached end of interlude. Now if there is still space, print the beginng
-  // of the string. Note, we already know that this will never go to
-  // content_.end(), so no need to check that.
-  std::string::iterator print_prefix = content_.begin();
+  // Reached end of scroll content. If there is still space, print the beginng
+  // again. We know already that this will never reach end(), so no need to check
+  std::string::iterator print_prefix = scroll_content_.begin();
   while (char_printed < width_) {
     ++char_printed;
     utf8::unchecked::next(print_prefix);
   }
-  result.append(content_.begin(), print_prefix);
+  result.append(scroll_content_.begin(), print_prefix);
 
   return result;
 }
 
 void Scroller::NextTick() {
-  if (print_start_ == content_.begin() && print_end_ == content_.end())
-    return;  // fits entirely in screen. No scrolling needed.
+  if (!scrolling_needed_)
+    return;
 
   if (scroll_timeout_ > 0) {
     scroll_timeout_--;
   } else {
     utf8::unchecked::next(print_start_);
     --characters_on_screen_;   // one reduced in front
-    if (print_start_ == content_.end()) {
+    if (print_start_ == scroll_content_.end()) {
       InitIterators();
       scroll_timeout_ = kBorderWait;
-    } else if (print_end_ != content_.end()) {
+    } else if (print_end_ != scroll_content_.end()) {
       utf8::unchecked::next(print_end_);
       ++characters_on_screen_; // one added at end.
-      if (print_end_ == content_.end()) {
+      if (print_end_ == end_of_content_) {
         scroll_timeout_ = kBorderWait;
       }
     }

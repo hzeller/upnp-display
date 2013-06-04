@@ -41,11 +41,16 @@ private:
   void InitIterators();
 
   int width_;
-  std::string content_;
+  std::string orig_content_;
+  bool scrolling_needed_;         // If text is short, this won't need scrolling.
+
+  std::string scroll_content_;    // scrollable content, including interlude.
 
   std::string::const_iterator print_start_;
   std::string::const_iterator print_end_;
-  int characters_on_screen_;
+  std::string::const_iterator end_of_content_;  // before interlude. Wait there.
+
+  int characters_on_screen_; // portion shown; characters, not bytes.
   int scroll_timeout_;
 };
 
