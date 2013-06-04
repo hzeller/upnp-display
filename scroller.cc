@@ -22,9 +22,8 @@
 
 static const int kBorderWait = 4;  // ticks to wait at end-of-scroll
 
-static const char kInterlude[] = "   |   ";  // between scrolls.
-
-Scroller::Scroller() : characters_on_screen_(0), scroll_timeout_(0) {}
+Scroller::Scroller(const std::string &interlude)
+  : interlude_(interlude), characters_on_screen_(0), scroll_timeout_(0) {}
 
 void Scroller::InitIterators() {
   print_start_ = scroll_content_.begin();
@@ -45,7 +44,7 @@ void Scroller::SetValue(std::string &content, int width) {
     InitIterators();
     scrolling_needed_ = (print_end_ != scroll_content_.end());
     if (scrolling_needed_) {
-      scroll_content_ = orig_content_ + kInterlude;
+      scroll_content_ = orig_content_ + interlude_;
       InitIterators();
     }
     end_of_content_ = scroll_content_.begin() + orig_content_.length();

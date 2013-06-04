@@ -55,8 +55,8 @@ public:
     std::string title, composer, artist, album;
     std::string play_state = "STOPPED";
     int time = 0;
-    Scroller first_line_scroller;
-    Scroller second_line_scroller;
+    Scroller first_line_scroller("  -  ");
+    Scroller second_line_scroller("  -  ");
     std::string last_play_state;
     unsigned char blink_time = 0;
     for (;;) {

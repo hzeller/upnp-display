@@ -24,7 +24,8 @@
 // Utility class that implements the scrolling logic.
 class Scroller {
 public:
-  Scroller();
+  // Create Scroller that uses given interlude to separate infinit-scroll text.
+  Scroller(const std::string &interlude);
 
   // Set text value to be scrolled and the display width available.
   // If the value or width is different from a previously set value, the scroll
@@ -39,6 +40,8 @@ public:
 
 private:
   void InitIterators();
+
+  const std::string interlude_;
 
   int width_;
   std::string orig_content_;
