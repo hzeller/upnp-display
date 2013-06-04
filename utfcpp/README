@@ -2,6 +2,9 @@ This code is utfcpp version 2.3.4
 
 http://utfcpp.sourceforge.net/
 
+We only really use utf8::unchecked::next(), so it is a bit lazy that we pull
+this bigger library in here. Consider to just hand-roll that.
+
 License:
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by

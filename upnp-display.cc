@@ -144,8 +144,8 @@ public:
 
   virtual void AddRenderer(const std::string &uuid,
                            const RendererState *state) {
-    printf("%s: connected (uuid=%s)\n",
-           state->friendly_name().c_str(), uuid.c_str());
+    printf("%s: connected (uuid=%s)\n",             // not LCD, different thread
+           state->friendly_name().c_str(), uuid.c_str()); 
     if (current_state_ == NULL
         && (player_match_name_.empty()
             || player_match_name_ == state->friendly_name())) {
@@ -153,12 +153,11 @@ public:
       uuid_ = uuid;
       current_state_ = state;
       ithread_mutex_unlock(&mutex_);
-      // This is a different thread than main(); don't print anything here.
     }
   }
 
   virtual void RemoveRenderer(const std::string &uuid) {
-    printf("disconnect (uuid=%s)\n", uuid.c_str());
+    printf("disconnect (uuid=%s)\n", uuid.c_str()); // not LCD, different thread
     if (current_state_ != NULL && uuid == uuid_) {
       ithread_mutex_lock(&mutex_);
       current_state_ = NULL;

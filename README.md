@@ -117,13 +117,23 @@ but expects it to transmit changes according to the UPnP eventing standard.
 
 Right now, this is tested with [gmrender-resurrect][], which works perfectly.
 
-#### Special characters
-While the titles and album names can contain the full UTF-8 characters set,
-the LCD displays can't show them by default. So right now, only ASCII characters
-are displayed well.
+#### Unicode support
+These LCD displays only support the ASCII character set which is a bit
+limited for international titles or artist names.
 
-The LCD displays allow for having some custom character bitmaps. There is
-work-in-progres to actually support unicode characters soon.
+Luckily, these displays have a way to have up to 8 user defined characters. We
+are using this feature to upload a font for characters outside the ASCII range
+(Uses the excellent [ucs-fixed][Public Domain fixed Unicode font]).
+
+This works of course only well if there are less than 8 different non-ASCII
+characters on the screen - if you have song titles that are all outside this
+range (e.g. your language uses an entirely different script), then this is likely
+to fail.
+
+Here you see an example that uses the non-ASCII characters
+&auml;, &uuml; and &szlig;
+
+![UTF-8 display][utf-8-display]
 
 #### LCD Displays
 Most displays you can get are HD44780 compatible; There are as well
@@ -148,4 +158,6 @@ interfacing and modify lcd-display.cc
 [soldered]: https://github.com/hzeller/upnp-display/raw/master/images/soldered-small.jpg
 [connected]: https://github.com/hzeller/upnp-display/raw/master/images/plugged-in-small.jpg
 [in-operation]: https://github.com/hzeller/upnp-display/raw/master/images/in-operation-small.jpg
+[utf-8-display]: https://github.com/hzeller/upnp-display/raw/master/images/utf8-lcd-small.jpg
 [gmrender-resurrect]: http://github.com/hzeller/gmrender-resurrect
+[ucs-fixed]: http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html

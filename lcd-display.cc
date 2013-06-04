@@ -63,6 +63,7 @@ static void WriteByte(bool is_command, uint8_t b) {
   usleep(LCD_DISPLAY_OPERATION_WAIT_USEC);
 }
 
+// Find font for codepoint from our sorted compiled-in table.
 const static Font5x8 *findFont(const uint32_t codepoint) {
   int lo = 0, hi = kFontDataSize;
   int pos;
