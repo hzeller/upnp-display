@@ -123,7 +123,7 @@ limited for international titles or artist names.
 
 Luckily, these displays have a way to have up to 8 user defined characters. We
 are using this feature to upload a font for characters outside the ASCII range
-(Uses the excellent [ucs-fixed][Public Domain fixed Unicode font]).
+(Uses the excellent [Public Domain fixed Unicode font][ucs-fixed]).
 
 This works of course only well if there are less than 8 different non-ASCII
 characters on the screen - if you have song titles that are all outside this
