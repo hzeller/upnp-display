@@ -50,9 +50,15 @@ static void WriteNibble(bool is_command, uint8_t b) {
   out |= (b & 0x8) ? LCD_D3_BIT : 0;
   out |= LCD_E;
   gpio.Write(out);
-  usleep(1);      // > 230ns
-  out &= ~LCD_E;
-  gpio.Write(out);
+  // We don't want to do a sleep because we don't want to risk a context
+  // switch - Linux might come back way to late (the LCD display times out
+  // between two Nibble-writes and ends up in a broken state).
+  const int kNanoWait = 400;
+  for (int i = kNanoWait >> 2; i != 0; --i) {  // Empirically good on RPi 700Mhz
+    asm("");   // force GCC not to optimize this away.
+  }
+
+  gpio.ClearBits(LCD_E);
 }
 
 // Write data to display. Differentiates if this is a command byte or data
