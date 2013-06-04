@@ -5,7 +5,7 @@ BEGIN {
     print("// Generated code. Do not edit.");
     print("#include \"font-data.h\"");
     print;
-    print("struct Font5x8 kFontData[] = {");
+    print("const struct Font5x8 kFontData[] = {");
 }
 
 /^STARTCHAR/              { val=$2 }
@@ -26,5 +26,5 @@ BEGIN {
 }
 
 END {
-    printf("};\nuint32_t kFontDataSize = %d;\n", count);
+    printf("};\nconst int kFontDataSize = %d;\n", count);
 }

@@ -22,13 +22,13 @@
 #include <stdint.h>
 
 // Fixed font. Defined in font-data.c, that is generated from public domain
-// font 5x7.bdf
+// font 5x8.bdf
 struct Font5x8 {
   uint32_t codepoint;
   uint8_t bitmap[8];
 };
 
-extern struct Font5x8 kFontData[];
-extern uint32_t kFontDataSize;
+extern const struct Font5x8 kFontData[];
+extern const int kFontDataSize;
 
 #endif  // FONT_DATA_H
