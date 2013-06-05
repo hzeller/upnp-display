@@ -17,17 +17,18 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <upnp/ithread.h>
 
-#include "observer.h"
 #include "controller-state.h"
+#include "lcd-display.h"
+#include "observer.h"
 #include "printer.h"
 #include "renderer-state.h"
-#include "lcd-display.h"
 #include "scroller.h"
+#include "utf8.h"
 
 // Comment this out, if you don't run this on a Raspberry Pi; then it will
 // do some basic printing on the console.
@@ -194,14 +195,16 @@ private:
   }
 
   void CenterAlign(std::string *to_print, int width) {
-    if ((int)to_print->length() < width) {
-      to_print->insert(0, std::string((width - to_print->length()) / 2, ' '));
+    const int len = utf8_character_count(to_print->begin(), to_print->end());
+    if (len < width) {
+      to_print->insert(0, std::string((width - len) / 2, ' '));
     }
   }
 
   void RightAlign(std::string *to_print, int width) {
-    if ((int)to_print->length() < width) {
-      to_print->insert(0, std::string((width - to_print->length()), ' '));
+    const int len = utf8_character_count(to_print->begin(), to_print->end());
+    if (len < width) {
+      to_print->insert(0, std::string((width - len), ' '));
     }
   }
 
