@@ -82,12 +82,12 @@ const static Font5x8 *findFont(const uint32_t codepoint) {
   return (kFontData[pos].codepoint == codepoint) ? &kFontData[pos] : NULL;
 }
 
-static void RegisterFont(int num, const Font5x8 *font) {
+static void RegisterFont(uint8_t num, const Font5x8 *font) {
   assert(font);
   assert(num < 8);
+  WriteByte(true, 0x40 + (num << 3));
   for (int i = 0; i < 8; ++i) {
-    WriteByte(true, 0x40 + (num << 3) + i);
-    WriteByte(false, font->bitmap[i] >> 3);
+    WriteByte(false, font->bitmap[i] >> 3);  // font is left aligned in data.
   }
 }
 
@@ -108,7 +108,7 @@ uint8_t LCDDisplay::FindCharacterFor(Codepoint cp, bool *register_new) {
   const Font5x8 *font = findFont(cp);
   if (font == NULL) return '?';  // unicode without font.
 
-  const uint32_t new_char = (next_free_special_++ % 8);
+  const uint8_t new_char = (next_free_special_++ % 8);
   RegisterFont(new_char, font);
   *register_new = true;
   special_characters_[new_char] = cp;
@@ -165,7 +165,7 @@ void LCDDisplay::Print(int row, const std::string &text) {
   std::string::const_iterator it = text.begin();
   int screen_pos = 0;
   for (screen_pos = 0; screen_pos < width_ && it != text.end(); ++screen_pos) {
-    const uint32_t codepoint = utf8_next_codepoint(it);
+    const Codepoint codepoint = utf8_next_codepoint(it);
     bool ddram_dirty = false;
     uint8_t char_to_print = FindCharacterFor(codepoint, &ddram_dirty);
     if (ddram_dirty) {

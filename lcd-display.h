@@ -47,7 +47,7 @@ private:
   std::string last_line_[2];
 
   Codepoint special_characters_[8];  // cgram -> codepoint
-  int next_free_special_;
+  uint8_t next_free_special_;
 };
 
 #endif // UPNP_DISPLAY_LCD_
