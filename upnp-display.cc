@@ -204,7 +204,7 @@ private:
   void RightAlign(std::string *to_print, int width) {
     const int len = utf8_character_count(to_print->begin(), to_print->end());
     if (len < width) {
-      to_print->insert(0, std::string((width - len), ' '));
+      to_print->insert(0, std::string(width - len, ' '));
     }
   }
 
