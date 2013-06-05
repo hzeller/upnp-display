@@ -93,7 +93,7 @@ static void RegisterFont(int num, const Font5x8 *font) {
 
 uint8_t LCDDisplay::FindCharacterFor(Codepoint cp, bool *register_new) {
   *register_new = false;
-  if (cp < 0x7F) return cp;
+  if (cp < 0x80) return cp;
 
   // Conceptually, we need a map codepoint -> char; but this is a really small
   // list, so this is faster to iterate than having a bulky map.
