@@ -110,8 +110,8 @@ public:
         printer_->Print(0, print_line);
 
         print_line = play_state;
-        if (play_state == "STOPPED")              print_line = "[Stopped]";
-        else if (play_state == "PAUSED_PLAYBACK") print_line = "[Paused]";
+        if (play_state == "STOPPED") print_line = "[\u2b1b Stopped]";
+        else if (play_state == "PAUSED_PLAYBACK") print_line = "[|| Paused]";
         CenterAlign(&print_line, printer_->width());
         printer_->Print(1, print_line);
         continue;
@@ -129,6 +129,8 @@ public:
         if (play_state == "PAUSED_PLAYBACK" && blink_time % 2 == 0) {
           formatted_time = std::string(formatted_time.size(), ' ');
         }
+      } else {
+        formatted_time = "\u2b1b";
       }
 
       int remaining_len = printer_->width() - formatted_time.length() - 1;
