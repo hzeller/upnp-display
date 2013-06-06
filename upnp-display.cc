@@ -16,6 +16,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <assert.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -49,6 +50,8 @@ public:
     : player_match_name_(friendly_name),
       printer_(printer), current_state_(NULL) {
     ithread_mutex_init(&mutex_, NULL);
+    signal(SIGTERM, &StopLoop);
+    signal(SIGINT, &StopLoop);
   }
   
   void Loop() {
@@ -60,7 +63,9 @@ public:
     Scroller second_line_scroller("  -  ");
     std::string last_play_state;
     unsigned char blink_time = 0;
-    for (;;) {
+
+    running_ = true;
+    while (running_) {
       usleep(kDisplayUpdateMillis * 1000);
       bool got_var = false;
       ithread_mutex_lock(&mutex_);
@@ -141,6 +146,14 @@ public:
       first_line_scroller.NextTick();
       second_line_scroller.NextTick();
     }
+
+    std::string msg = "Goodbye!";
+    CenterAlign(&msg, printer_->width());
+    printer_->Print(0, msg);
+    // Show off unicode :)
+    msg = "\u2192 \u266a\u266b\u266a\u2669 \u2190";  // → ♪♫♩ ←
+    CenterAlign(&msg, printer_->width());
+    printer_->Print(1, msg);
   }
 
   virtual void AddRenderer(const std::string &uuid,
@@ -208,13 +221,20 @@ private:
     }
   }
 
+  static void StopLoop(int signo) {
+    running_ = false;
+  }
+
   const std::string player_match_name_;
   Printer *const printer_;
   ithread_mutex_t mutex_;
 
   std::string uuid_;
   const RendererState *current_state_;
+  static volatile bool running_;
 };
+
+volatile bool UIFormatter::running_ = true;
 
 int main(int argc, char *argv[]) {
   std::string match_name;
