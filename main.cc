@@ -34,13 +34,17 @@
 int main(int argc, char *argv[]) {
   std::string match_name;
   int opt;
-  while ((opt = getopt(argc, argv, "n:")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
       break;
-    default: /* '?' */
+
+    case 'h':
+    default:
       fprintf(stderr, "Usage: %s [-n name]\n", argv[0]);
+      fprintf(stderr, "\t-n <name or \"uuid:\"<uuid>>"
+              ": Connect to this renderer.\n");
       return 1;
     }
   }

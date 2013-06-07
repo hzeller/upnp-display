@@ -170,6 +170,7 @@ void UPnPDisplay::AddRenderer(const std::string &uuid,
          state->friendly_name().c_str(), uuid.c_str()); 
   if (current_state_ == NULL
       && (player_match_name_.empty()
+          || player_match_name_ == uuid
           || player_match_name_ == state->friendly_name())) {
     ithread_mutex_lock(&mutex_);
     uuid_ = uuid;
