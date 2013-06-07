@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <upnp/ithread.h>
 
@@ -34,6 +35,9 @@
 // This influences scroll speed and 'pause' blinking.
 // Note, too fast scrolling looks blurry on cheap displays.
 static const int kDisplayUpdateMillis = 400;
+
+// Number of periods, a changed volume flashes up.
+static const int kVolumeFlashTime = 3;
 
 // We do the signal receiving the classic static way, as creating callbacks to
 // c functions is more readable than with c++ methods :)
@@ -58,11 +62,14 @@ void UPnPDisplay::Loop() {
   std::string player_name;
   std::string title, composer, artist, album;
   std::string play_state = "STOPPED";
+  std::string volume, previous_volume;
   int time = 0;
+
   Scroller first_line_scroller("  -  ");
   Scroller second_line_scroller("  -  ");
   unsigned char blink_time = 0;
-  
+  int volume_countdown = 0;
+
   signal_received = false;
   while (!signal_received) {
     usleep(kDisplayUpdateMillis * 1000);
@@ -83,6 +90,7 @@ void UPnPDisplay::Loop() {
       play_state = current_state_->GetVar("TransportState");
       time = parseTime(current_state_->GetVar("RelativeTimePosition"));
       //duration = parseTime(current_state_->GetVar("CurrentTrackDuration"));
+      volume = current_state_->GetVar("Volume");
     }
     ithread_mutex_unlock(&mutex_);
 
@@ -101,12 +109,32 @@ void UPnPDisplay::Loop() {
     if (!print_line.empty()) print_line.append(": ");
     print_line.append(title);
 
-    if (print_line.empty() && album.empty()) {
-      // Nothing really to display ? Show play-state.
+    const bool no_title_to_display = (print_line.empty() && album.empty());
+    if (no_title_to_display) {
+      // No title, so show at least player name.
       print_line = player_name;
       CenterAlign(&print_line, printer_->width());
       printer_->Print(0, print_line);
+    }
 
+    // Second line: if there is a volume change, display it for kVolumeFlashTime
+    if (volume != previous_volume || volume_countdown > 0) {
+      if (!previous_volume.empty()) {
+        if (volume != previous_volume) {
+          volume_countdown = kVolumeFlashTime;
+        } else {
+          --volume_countdown;
+        }
+        std::string volume_line = "Volume " + volume;
+        CenterAlign(&volume_line, printer_->width());
+        printer_->Print(1, volume_line);
+      }
+      previous_volume = volume;
+      continue;
+    }
+
+    if (no_title_to_display) {
+      // Nothing really to display ? Show play-state.
       print_line = play_state;
       if (play_state == "STOPPED")
         print_line = STOP_SYMBOL " [Stopped]";
