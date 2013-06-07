@@ -166,26 +166,26 @@ void UPnPDisplay::Loop() {
 
 void UPnPDisplay::AddRenderer(const std::string &uuid,
                               const RendererState *state) {
-  printf("%s: connected (uuid=%s)\n",             // not LCD, different thread
-         state->friendly_name().c_str(), uuid.c_str()); 
+  printf("%s: connected (uuid=%s)\n",            // not to LCD, different thread
+         state->friendly_name().c_str(), uuid.c_str());
+  ithread_mutex_lock(&mutex_);
   if (current_state_ == NULL
       && (player_match_name_.empty()
           || player_match_name_ == uuid
           || player_match_name_ == state->friendly_name())) {
-    ithread_mutex_lock(&mutex_);
     uuid_ = uuid;
     current_state_ = state;
-    ithread_mutex_unlock(&mutex_);
   }
+  ithread_mutex_unlock(&mutex_);
 }
 
 void UPnPDisplay::RemoveRenderer(const std::string &uuid) {
-  printf("disconnect (uuid=%s)\n", uuid.c_str()); // not LCD, different thread
+  printf("disconnect (uuid=%s)\n", uuid.c_str()); // not to LCD, different thread
+  ithread_mutex_lock(&mutex_);
   if (current_state_ != NULL && uuid == uuid_) {
-    ithread_mutex_lock(&mutex_);
     current_state_ = NULL;
-    ithread_mutex_unlock(&mutex_);
   }
+  ithread_mutex_unlock(&mutex_);
 }
                                      
 int UPnPDisplay::parseTime(const std::string &upnp_time) {
