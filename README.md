@@ -150,7 +150,7 @@ upnp-display.cc. Usually, the pin-out looks a bit different (2 rows with 7 or 8
 lines), but typically it has the same data lines on the same pin numbers - check
 your data sheet.
 
-Here a 40 character display from ebay (DMC-50047N)
+Here a 40 character display from ebay (DMC-50037N)
 ![40 character display][display-40-char]
 
 #### Other machines than Raspberry Pi
