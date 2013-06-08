@@ -146,17 +146,12 @@ Most displays you can get are HD44780 compatible; There are as well
 24x2 and 40x2 displays available (also pretty cheap). I found that 16
 characters is a bit on the low side to display a useful amount without constant
 scrolling. If you get another display, change the #define LCD_DISPLAY_WIDTH in
-upnp-display.cc. Usually, the pin-out looks a bit different, but typically it
-has the same data lines - check your data sheet.
+upnp-display.cc. Usually, the pin-out looks a bit different (2 rows with 7 or 8
+lines), but typically it has the same data lines on the same pin numbers - check
+your data sheet.
 
 Here a 40 character display from ebay (DMC-50047N)
 ![40 character display][display-40-char]
-
-We can't check the 'busy'-status of the LCD display, as we can't read from
-the interface (the LCD operats at 5V and the GPIO pins only tolerate 3.3V). Hence
-the handshake to the display is ensured by waiting after each write which should
-be enough according to the data sheet. If you need tweaking, look at
-lcd-display.cc
 
 #### Other machines than Raspberry Pi
 If you want to connect the display on some other computer
