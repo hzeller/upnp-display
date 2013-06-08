@@ -149,6 +149,9 @@ scrolling. If you get another display, change the #define LCD_DISPLAY_WIDTH in
 upnp-display.cc. Usually, the pin-out looks a bit different, but typically it
 has the same data lines - check your data sheet.
 
+Here a 40 character display from ebay (DMC-50047N)
+![40 character display][display-40-char]
+
 We can't check the 'busy'-status of the LCD display, as we can't read from
 the interface (the LCD operats at 5V and the GPIO pins only tolerate 3.3V). Hence
 the handshake to the display is ensured by waiting after each write which should
@@ -165,5 +168,6 @@ interfacing and modify lcd-display.cc
 [connected]: https://github.com/hzeller/upnp-display/raw/master/images/plugged-in-small.jpg
 [in-operation]: https://github.com/hzeller/upnp-display/raw/master/images/in-operation-small.jpg
 [utf-8-display]: https://github.com/hzeller/upnp-display/raw/master/images/utf8-lcd-small.jpg
+[display-40-char]: https://github.com/hzeller/upnp-display/raw/master/images/display-40-char-small.jpg
 [gmrender-resurrect]: http://github.com/hzeller/gmrender-resurrect
 [ucs-fixed]: http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html
