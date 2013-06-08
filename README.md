@@ -50,10 +50,12 @@ Connect
    - **LCD 14** _(Data 7)_ to **GPIO Pin P1-24** (12th from right, Bit 8)
 
 Cross check: With this connection, you should end up with the following
-pins not connected:
-   - LCD Pin 7, 8, 9, 10 (and 15, 16 if it has these pins)
-   - GPIO P1-02, P1-10, P1-14, P1-20, P1-26 (seen from the right, this
-     is pin 1, 5, 7, 10, 13).
+configuration
+   - 8 wires connect LCD display with header.
+   - 2 wires connecting LCD pins to the first LCD pin (GND).
+   - Not connected LCD: Pin 7, 8, 9, 10 (and 15, 16 if it has these pins)
+   - Not connected RPi: GPIO P1-02, P1-10, P1-14, P1-20, P1-26 (seen from the
+     right, this is pin 1, 5, 7, 10, 13).
 
 I would suggest to first connect short cables to all LCD pins that need to be
 connected, then connect them right to left to the 13x1 header. The first two
