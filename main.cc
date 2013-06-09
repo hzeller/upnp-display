@@ -28,29 +28,41 @@
 #define USE_RASPBERRY_LCD
 
 // Width of your display. Usually this is just 16 wide, but you can get 24 or
-// even 40 wide displays.
+// even 40 wide displays. You can also set this via the -w option.
 #define LCD_DISPLAY_WIDTH 16
 
 int main(int argc, char *argv[]) {
   std::string match_name;
+  int display_width = LCD_DISPLAY_WIDTH;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:w:")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
       break;
 
+    case 'w': {
+      int w = atoi(optarg);
+      if (w < 8) {
+        fprintf(stderr, "Invalid width %d\n", w);
+        return 1;
+      }
+      display_width = w;
+      break;
+    }
+
     case 'h':
     default:
       fprintf(stderr, "Usage: %s [-n name]\n", argv[0]);
-      fprintf(stderr, "\t-n <name or \"uuid:\"<uuid>>"
-              ": Connect to this renderer.\n");
+      fprintf(stderr, "\t-n <name or \"uuid:\"<uuid>"
+              ": Connect to this renderer.\n"
+              "\t-w <display-width>         : Display Width.");
       return 1;
     }
   }
 
 #ifdef USE_RASPBERRY_LCD
-  LCDDisplay printer(LCD_DISPLAY_WIDTH);
+  LCDDisplay printer(display_width);
   if (!printer.Init()) {
     fprintf(stderr, "You need to run this as root to have access to GPIO pins. "
             "Run with sudo.\n");
