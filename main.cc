@@ -34,11 +34,16 @@
 int main(int argc, char *argv[]) {
   std::string match_name;
   int display_width = LCD_DISPLAY_WIDTH;
+  bool as_daemon = false;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:w:d")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
+      break;
+
+    case 'd':
+      as_daemon = true;
       break;
 
     case 'w': {
@@ -73,6 +78,10 @@ int main(int argc, char *argv[]) {
 #endif
 
   // TODO: drop priviliges (GPIO is set up at this point).
+
+  if (as_daemon) {
+    daemon(0, 0);
+  }
 
   UPnPDisplay ui(match_name, &printer);
   ControllerState controller(&ui);
