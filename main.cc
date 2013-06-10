@@ -53,10 +53,10 @@ int main(int argc, char *argv[]) {
 
     case 'h':
     default:
-      fprintf(stderr, "Usage: %s [-n name]\n", argv[0]);
+      fprintf(stderr, "Usage: %s <options>\n", argv[0]);
       fprintf(stderr, "\t-n <name or \"uuid:\"<uuid>"
               ": Connect to this renderer.\n"
-              "\t-w <display-width>         : Display Width.");
+              "\t-w <display-width>       : Set display width.\n");
       return 1;
     }
   }
