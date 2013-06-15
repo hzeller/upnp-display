@@ -17,6 +17,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "controller-state.h"
 #include "upnp-display.h"
