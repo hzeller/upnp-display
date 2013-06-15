@@ -35,7 +35,13 @@ public:
 // Very simple implementation of the above, mostly for debugging. Just prints
 // stuff continuously.
 class ConsolePrinter : public Printer {
+public:
+  explicit ConsolePrinter(int width) : width_(width) {}
+  virtual int width() const { return width_; }
   virtual void Print(int line, const std::string &text);
+
+private:
+  const int width_;
 };
 
 #endif  // UPNP_DISPLAY_PRINTER_

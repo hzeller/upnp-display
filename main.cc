@@ -24,20 +24,17 @@
 #include "lcd-display.h"
 #include "printer.h"
 
-// Comment this out, if you don't run this on a Raspberry Pi; then it will
-// do some basic printing on the console.
-#define USE_RASPBERRY_LCD
-
 // Width of your display. Usually this is just 16 wide, but you can get 24 or
 // even 40 wide displays. You can also set this via the -w option.
-#define LCD_DISPLAY_WIDTH 16
+#define DEFAULT_LCD_DISPLAY_WIDTH 16
 
 int main(int argc, char *argv[]) {
   std::string match_name;
-  int display_width = LCD_DISPLAY_WIDTH;
+  int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
   bool as_daemon = false;
+  bool on_console = false;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:d")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:w:dc")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
@@ -45,6 +42,10 @@ int main(int argc, char *argv[]) {
 
     case 'd':
       as_daemon = true;
+      break;
+
+    case 'c':
+      on_console = true;
       break;
 
     case 'w': {
@@ -62,21 +63,27 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Usage: %s <options>\n", argv[0]);
       fprintf(stderr, "\t-n <name or \"uuid:\"<uuid>"
               ": Connect to this renderer.\n"
-              "\t-w <display-width>       : Set display width.\n");
+              "\t-w <display-width>       : Set display width.\n"
+              "\t-d                       : Run as daemon.\n"
+              "\t-c                       : On console instead LCD (debug).\n"
+              );
       return 1;
     }
   }
 
-#ifdef USE_RASPBERRY_LCD
-  LCDDisplay printer(display_width);
-  if (!printer.Init()) {
-    fprintf(stderr, "You need to run this as root to have access to GPIO pins. "
-            "Run with sudo.\n");
-    return 1;
+  Printer *printer = NULL;
+  if (on_console) {
+    printer = new ConsolePrinter(display_width);
+  } else {
+    LCDDisplay *display = new LCDDisplay(display_width);
+    if (!display->Init()) {
+      fprintf(stderr, "You need to run this as root to have access "
+              "to GPIO pins. Run with sudo (or with option -c to output on "
+              "console instead).\n");
+      return 1;
+    }
+    printer = display;
   }
-#else
-  ConsolePrinter printer;
-#endif
 
   // TODO: drop priviliges (GPIO is set up at this point).
 
@@ -84,9 +91,11 @@ int main(int argc, char *argv[]) {
     daemon(0, 0);
   }
 
-  UPnPDisplay ui(match_name, &printer);
+  UPnPDisplay ui(match_name, printer);
   ControllerState controller(&ui);
   ui.Loop();
+
+  delete printer;
 
   return 0;
 }
