@@ -29,12 +29,13 @@
 #define DEFAULT_LCD_DISPLAY_WIDTH 16
 
 int main(int argc, char *argv[]) {
+  enum OutputMode { LCD, DBus, Console };
   std::string match_name;
   int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
   bool as_daemon = false;
-  bool on_console = false;
+  OutputMode output_mode = LCD;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:dc")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:w:o:")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
@@ -44,8 +45,16 @@ int main(int argc, char *argv[]) {
       as_daemon = true;
       break;
 
-    case 'c':
-      on_console = true;
+    case 'o':
+      if (optarg != NULL) {
+        std::string optarg_str = optarg;
+        if ((optarg_str == "l") || (optarg_str == "lcd"))
+          output_mode = LCD;
+        else if ((optarg_str == "c") || (optarg_str == "console"))
+          output_mode = Console;
+        else if ((optarg_str == "d") || (optarg_str == "dbus"))
+          output_mode = DBus;
+      }
       break;
 
     case 'w': {
@@ -61,19 +70,23 @@ int main(int argc, char *argv[]) {
     case 'h':
     default:
       fprintf(stderr, "Usage: %s <options>\n", argv[0]);
-      fprintf(stderr, "\t-n <name or \"uuid:\"<uuid>"
+      fprintf(stderr, "\t-n <name or \"uuid  :\"<uuid>"
               ": Connect to this renderer.\n"
-              "\t-w <display-width>       : Set display width.\n"
-              "\t-d                       : Run as daemon.\n"
-              "\t-c                       : On console instead LCD (debug).\n"
+              "\t-w <display-width>         : Set display width. Ignored when output is DBus.\n"
+              "\t-d                         : Run as daemon.\n"
+              "\t-o <l|lcd|c|console|d|dbus : Output to LCD (default), console (debug) or DBus.\n"
               );
       return 1;
     }
   }
 
+  ControllerObserver* ui = NULL;
   Printer *printer = NULL;
-  if (on_console) {
+  if (output_mode == Console) {
     printer = new ConsolePrinter(display_width);
+    ui = new UPnPDisplay(match_name, printer);
+  } else if(output_mode == DBus) {
+    ui = new DBusPublisher(match_name);
   } else {
     LCDDisplay *display = new LCDDisplay(display_width);
     if (!display->Init()) {
@@ -83,6 +96,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
     printer = display;
+    ui = new UPnPDisplay(match_name, printer);
   }
 
   // TODO: drop priviliges (GPIO is set up at this point).
@@ -91,10 +105,14 @@ int main(int argc, char *argv[]) {
     daemon(0, 0);
   }
 
-  UPnPDisplay ui(match_name, printer);
-  ControllerState controller(&ui);
-  ui.Loop();
+  ControllerState controller(ui);
+  //HACK XXX
+  if((output_mode == Console) || (output_mode == LCD))
+    ((UPnpDisplay*)ui)->Loop();
+  else
+    ((DBusPublisher*)ui)->Loop();
 
+  delete ui;
   delete printer;
 
   return 0;

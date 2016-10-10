@@ -1,8 +1,8 @@
 LIBS=$(shell pkg-config --cflags --libs libupnp)
 INCLUDES=$(shell pkg-config --cflags --libs libupnp)
 
-OBJECTS=main.o upnp-display.o renderer-state.o printer.o controller-state.o \
-	lcd-display.o gpio.o scroller.o font-data.o
+OBJECTS=main.o upnp-display.o dbus-publisher.o renderer-state.o printer.o \
+  controller-state.o lcd-display.o gpio.o scroller.o font-data.o
 
 CFLAGS=-g -Wall $(INCLUDES)
 CXXFLAGS=-g -Wall $(INCLUDES)
