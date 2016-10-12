@@ -19,18 +19,19 @@
 #define UPNP_DISPLAY_H
 
 #include <string>
-
-#include "observer.h"
 #include <upnp/ithread.h>
 
-class Printer;
+#include "observer.h"
+#include "render-info.h"
+
+class RenderInfoConsumer;
 
 class UPnPDisplay : public ControllerObserver {
 public:
   // Creates upnp display that waits for a renderer with the given
   // registered name (if empty string, waits for the first available).
-  // Outputs to "printer".
-  UPnPDisplay(const std::string &renderer_registered_name, Printer *printer);
+  // Outputs prepared RenderInfo to "consumer".
+  UPnPDisplay(const std::string &renderer_registered_name, RenderInfoConsumer *consumer);
   
   // Main Loop. Only exits on catching SIGTERM or SIGINT (Ctrl-c)
   void Loop();
@@ -47,15 +48,11 @@ private:
   // Parse time from UPnP variable.
   int parseTime(const std::string &upnp_time);
 
-  // Format time for display.
-  std::string formatTime(int time);
-
-  // Text formatting utility.
-  void CenterAlign(std::string *to_print, int width);
-  void RightAlign(std::string *to_print, int width);
+  // Parse play state from UPnP variable.
+  PlayState parsePlayState(const std::string& play_state);
 
   const std::string player_match_name_;
-  Printer *const printer_;
+  RenderInfoConsumer *const consumer_;
   ithread_mutex_t mutex_;
 
   std::string uuid_;

@@ -21,6 +21,7 @@
 
 #include "controller-state.h"
 #include "upnp-display.h"
+#include "display-writer.h"
 #include "lcd-display.h"
 #include "printer.h"
 
@@ -80,24 +81,27 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  ControllerObserver* ui = NULL;
+  RenderInfoConsumer* consumer = NULL;
   Printer *printer = NULL;
-  if (output_mode == Console) {
-    printer = new ConsolePrinter(display_width);
-    ui = new UPnPDisplay(match_name, printer);
-  } else if(output_mode == DBus) {
-    ui = new DBusPublisher(match_name);
-  } else {
-    LCDDisplay *display = new LCDDisplay(display_width);
-    if (!display->Init()) {
-      fprintf(stderr, "You need to run this as root to have access "
+  if ((output_mode == Console) || (output_mode == LCD)) {
+    if (output_mode == Console) 
+      printer = new ConsolePrinter(display_width);
+    else {
+      LCDDisplay *display = new LCDDisplay(display_width);
+      if (!display->Init()) {
+        fprintf(stderr, "You need to run this as root to have access "
               "to GPIO pins. Run with sudo (or with option -c to output on "
               "console instead).\n");
-      return 1;
+        return 1;
+      } else {
+        printer = display;
+      }
     }
-    printer = display;
-    ui = new UPnPDisplay(match_name, printer);
+    consumer = new DisplayWriter(printer);
+  } else {
+    consumer = NULL; //TODO: DBusPublisher();
   }
+
 
   // TODO: drop priviliges (GPIO is set up at this point).
 
@@ -105,14 +109,11 @@ int main(int argc, char *argv[]) {
     daemon(0, 0);
   }
 
-  ControllerState controller(ui);
-  //HACK XXX
-  if((output_mode == Console) || (output_mode == LCD))
-    ((UPnpDisplay*)ui)->Loop();
-  else
-    ((DBusPublisher*)ui)->Loop();
+  UPnPDisplay ui(match_name, consumer);
+  ControllerState controller(&ui);
+  ui.Loop();
 
-  delete ui;
+  delete consumer;
   delete printer;
 
   return 0;
