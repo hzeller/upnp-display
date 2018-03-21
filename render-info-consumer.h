@@ -27,7 +27,7 @@ class RenderInfoConsumer {
 public:
   virtual ~RenderInfoConsumer() {}
 
-  // Involked on start
+  // Invoked on start
   virtual void OnStart() = 0;
 
   // Invoked periodically with up-to-date render info 

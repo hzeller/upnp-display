@@ -23,7 +23,11 @@
 #include "upnp-display.h"
 #include "display-writer.h"
 #include "lcd-display.h"
-#include "printer.h"
+#include "console-printer.h"
+
+#ifdef USE_INBUS
+#include "inbus-publisher.h"
+#endif
 
 // Width of your display. Usually this is just 16 wide, but you can get 24 or
 // even 40 wide displays. You can also set this via the -w option.

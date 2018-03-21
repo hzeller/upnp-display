@@ -1,4 +1,4 @@
-//  -*- c++ -*-
+// -*- c++ -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -16,10 +16,21 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+//  Inbus Publisher contributed by Maarten Los (github.com/mlos)
+
+#ifndef UPNP_DISPLAY_INBUS_PUBLISHER_H
+#define UPNP_DISPLAY_INBUS_PUBLISHER_H
+
 #include "printer.h"
 
-#include <stdio.h>
+class InbusPublisher : public Printer {
 
-void ConsolePrinter::Print(int line, const std::string &text) {
-  printf("[%d]%s\n", line, text.c_str());
-}
+  virtual ~InbusPublisher();
+  virtual int width() const;
+  virtual void Print(int line, const std::string &text);
+};
+
+#endif // UPNP_DISPLAY_PRINTER_ 
+};
+
+#endif  // UPNP_DISPLAY_INBUS_PUBLISHER_H

@@ -27,7 +27,7 @@
 // connected to RPi GPIO pins.
 class LCDDisplay : public Printer {
 public:
-  LCDDisplay(int width);
+  LCDDisplay(int width = 16);
 
   // Call this first.
   bool Init();

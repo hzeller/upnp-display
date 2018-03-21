@@ -16,21 +16,19 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef UPNP_DISPLAY_PRINTER_
-#define UPNP_DISPLAY_PRINTER_
+#include "console-printer.h"
 
-#include <string>
+#include <stdio.h>
 
-// Interface for a simple display.
-class Printer {
-public:
-  virtual ~Printer() {}
+ConsolePrinter::ConsolePrinter(int width) : width_(width) {}
 
-  virtual int width() const = 0;
+ConsolePrinter::~ConsolePrinter() {}
 
-  // Print line. The text is given in UTF-8, the printer has to attempt
-  // to try its best to render it.
-  virtual void Print(int line, const std::string &text) = 0;
-};
+int ConsolePrinter::width() const { 
+  return width_;
+}
 
-#endif // UPNP_DISPLAY_PRINTER_ 
+void ConsolePrinter::Print(int line, const std::string &text) {
+  printf("[%d]%s\n", line, text.c_str());
+}
+

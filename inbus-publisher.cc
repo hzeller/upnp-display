@@ -1,4 +1,3 @@
-//  -*- c++ -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -16,21 +15,40 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef UPNP_DISPLAY_PRINTER_
-#define UPNP_DISPLAY_PRINTER_
+//  Inbus Publisher contributed by Maarten Los (github.com/mlos)
 
-#include <string>
+#ifdef USE_INBUS
 
-// Interface for a simple display.
-class Printer {
-public:
-  virtual ~Printer() {}
+// This influences the publishing rate on D-Bus 
+static const int kPublishingRateMillis = 400;
 
-  virtual int width() const = 0;
+InbusPublisher::InbusPubliher() {
+}
 
-  // Print line. The text is given in UTF-8, the printer has to attempt
-  // to try its best to render it.
-  virtual void Print(int line, const std::string &text) = 0;
-};
+~InbusPublisher::InbusPublisher() {
+}
 
-#endif // UPNP_DISPLAY_PRINTER_ 
+int InbusPublisher::width() const {
+    return 0; // not used
+}
+
+void Print(int line, const std::string &text) {
+}
+
+/*
+  Data struct
+  High Level:
+  bool waitingForRenderer
+  mode pause, play, stop
+  int volume
+  int time
+  string playerName
+  string title
+  string composer
+  string artist
+  string album
+*/
+
+
+#endif
+
