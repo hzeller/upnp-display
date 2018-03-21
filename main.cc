@@ -30,13 +30,19 @@
 #define DEFAULT_LCD_DISPLAY_WIDTH 16
 
 int main(int argc, char *argv[]) {
-  enum OutputMode { LCD, DBus, Console };
+  enum OutputMode { 
+    LCD
+    ,Console 
+#ifdef USE_INBUS
+    ,Inbus
+#endif
+  };
   std::string match_name;
   int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
   bool as_daemon = false;
   OutputMode output_mode = LCD;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:o:")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:w:o:c")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
@@ -46,6 +52,10 @@ int main(int argc, char *argv[]) {
       as_daemon = true;
       break;
 
+    case 'c':
+        output_mode = Console;
+        break;
+
     case 'o':
       if (optarg != NULL) {
         std::string optarg_str = optarg;
@@ -53,8 +63,10 @@ int main(int argc, char *argv[]) {
           output_mode = LCD;
         else if ((optarg_str == "c") || (optarg_str == "console"))
           output_mode = Console;
-        else if ((optarg_str == "d") || (optarg_str == "dbus"))
-          output_mode = DBus;
+#ifdef USE_INBUS
+        else if ((optarg_str == "i") || (optarg_str == "inbus"))
+          output_mode = Inbus;
+#endif
       }
       break;
 
@@ -71,11 +83,17 @@ int main(int argc, char *argv[]) {
     case 'h':
     default:
       fprintf(stderr, "Usage: %s <options>\n", argv[0]);
-      fprintf(stderr, "\t-n <name or \"uuid  :\"<uuid>"
+      fprintf(stderr, "\t-n <name or \"uuid  :\" <uuid>"
               ": Connect to this renderer.\n"
-              "\t-w <display-width>         : Set display width. Ignored when output is DBus.\n"
-              "\t-d                         : Run as daemon.\n"
-              "\t-o <l|lcd|c|console|d|dbus : Output to LCD (default), console (debug) or DBus.\n"
+              "\t-w <display-width>          : Set display width.\n"
+              "\t-d                          : Run as daemon.\n"
+              "\t-o <output-target>          : Output to a specific render target:\n"
+              "\t         <l|lcd>            :   LCD (default).\n"
+              "\t         <c|console>        :   console (debug).\n"
+#ifdef USE_INBUS
+              "\t         <i|inbus>          :   Inbus.\n"
+#endif
+              "\t-c                          : Same as '-o console'. Other targets are ignored.\n"
               );
       return 1;
     }
@@ -98,10 +116,12 @@ int main(int argc, char *argv[]) {
       }
     }
     consumer = new DisplayWriter(printer);
-  } else {
-    consumer = NULL; //TODO: DBusPublisher();
+  } 
+#ifdef USE_INBUS
+  else if (output_mode == Inbus) {
+    consumer = new InbusPublisher(printer);
   }
-
+#endif
 
   // TODO: drop priviliges (GPIO is set up at this point).
 
