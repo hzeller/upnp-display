@@ -27,7 +27,7 @@
 #include <upnp/ithread.h>
 
 #include "render-info.h"
-#include "render-info-consumer.h"
+#include "render-info-subscriber.h"
 #include "renderer-state.h"
 
 // Time between display updates.
@@ -45,9 +45,9 @@ static void SigReceiver(int) {
   signal_received = true;
 }
 
-UPnPDisplay::UPnPDisplay(const std::string &friendly_name, RenderInfoConsumer *consumer)
+UPnPDisplay::UPnPDisplay(const std::string &friendly_name, RenderInfoSubscriber *subscriber)
   : player_match_name_(friendly_name),
-    consumer_(consumer), current_state_(NULL) {
+    subscriber_(subscriber), current_state_(NULL) {
   ithread_mutex_init(&mutex_, NULL);
   signal(SIGTERM, &SigReceiver);
   signal(SIGINT, &SigReceiver);
@@ -57,7 +57,7 @@ void UPnPDisplay::Loop() {
 
   RenderInfo render_info;
   signal_received = false;
-  consumer_->OnStart();
+  subscriber_->OnStart();
 
   while (!signal_received) {
     usleep(kDisplayUpdateMillis * 1000);
@@ -83,10 +83,10 @@ void UPnPDisplay::Loop() {
     }
     ithread_mutex_unlock(&mutex_);
 
-    consumer_->OnRenderInfo(render_info);
+    subscriber_->OnRenderInfo(render_info);
   }
 
-  consumer_->OnExit();
+  subscriber_->OnExit();
 }
 
 void UPnPDisplay::AddRenderer(const std::string &uuid,

@@ -24,14 +24,14 @@
 #include "observer.h"
 #include "render-info.h"
 
-class RenderInfoConsumer;
+class RenderInfoSubscriber;
 
 class UPnPDisplay : public ControllerObserver {
 public:
   // Creates upnp display that waits for a renderer with the given
   // registered name (if empty string, waits for the first available).
-  // Outputs prepared RenderInfo to "consumer".
-  UPnPDisplay(const std::string &renderer_registered_name, RenderInfoConsumer *consumer);
+  // Outputs prepared RenderInfo to "subscriber".
+  UPnPDisplay(const std::string &renderer_registered_name, RenderInfoSubscriber *subscriber);
   
   // Main Loop. Only exits on catching SIGTERM or SIGINT (Ctrl-c)
   void Loop();
@@ -52,7 +52,7 @@ private:
   PlayState parsePlayState(const std::string& play_state);
 
   const std::string player_match_name_;
-  RenderInfoConsumer *const consumer_;
+  RenderInfoSubscriber *const subscriber_;
   ithread_mutex_t mutex_;
 
   std::string uuid_;

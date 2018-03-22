@@ -1,4 +1,4 @@
-// -*- c++ -*-
+// - -*- c++ -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -16,21 +16,53 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//  Inbus Publisher contributed by Maarten Los (github.com/mlos)
-
 #ifndef UPNP_DISPLAY_INBUS_PUBLISHER_H
 #define UPNP_DISPLAY_INBUS_PUBLISHER_H
 
-#include "printer.h"
+#include "render-info-subscriber.h"
 
-class InbusPublisher : public Printer {
+// Only publishes a message if one of the following 
+// render-info fields changes:
+//  - waiting for renderer
+//  - play_state
+//  - title
+//  - composer
+//  - artist
+//  - album
+//
+// Publishes to Inbus in the following JSON format.
+// {
+//     "ready" : <int>,
+//     "playstate" : <int>,
+//     "title" : <string>,
+//     "composer" : <string>,
+//     "artist" : <string>,
+//     "album" : <string>
+// }
+// 
+// where 
+//    <ready>: 0=waiting for renderer 1=renderer available
+//    <play-state>: 0=paused, 1=playing, 2=stopped
+// 
+class Publisher;
 
+class InbusPublisher : public RenderInfoSubscriber {
+
+public:
+  InbusPublisher();
   virtual ~InbusPublisher();
-  virtual int width() const;
-  virtual void Print(int line, const std::string &text);
-};
 
-#endif // UPNP_DISPLAY_PRINTER_ 
+  virtual void OnStart();
+  virtual void OnRenderInfo(const RenderInfo &render_info);
+  virtual void OnExit();
+
+private:
+  Publisher* inbusPublisher_; 
+  RenderInfo lastRenderInfo_;
+    
+  bool HasNewRenderInfo(const RenderInfo &render_info);
+  std::string CreateJSONMessage(const RenderInfo &render_info);
+  
 };
 
 #endif  // UPNP_DISPLAY_INBUS_PUBLISHER_H

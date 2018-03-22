@@ -15,40 +15,64 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//  Inbus Publisher contributed by Maarten Los (github.com/mlos)
-
 #ifdef USE_INBUS
 
-// This influences the publishing rate on D-Bus 
-static const int kPublishingRateMillis = 400;
+#include "inbus-publisher.h"
 
-InbusPublisher::InbusPubliher() {
+#include <sstream>
+
+#include <inbus/publisher.h>
+
+
+InbusPublisher::InbusPublisher() {
 }
 
-~InbusPublisher::InbusPublisher() {
+InbusPublisher::~InbusPublisher() {
 }
 
-int InbusPublisher::width() const {
-    return 0; // not used
+void InbusPublisher::OnStart() {
+  lastRenderInfo_.is_waiting_for_renderer = true;
+  inbusPublisher_ = new Publisher("upnp-display");
+  inbusPublisher_->publish(CreateJSONMessage(lastRenderInfo_));
 }
 
-void Print(int line, const std::string &text) {
+void InbusPublisher::OnRenderInfo(const RenderInfo &render_info) {
+
+  if(HasNewRenderInfo(render_info)) {
+    inbusPublisher_->publish(CreateJSONMessage(render_info));
+  }
 }
 
-/*
-  Data struct
-  High Level:
-  bool waitingForRenderer
-  mode pause, play, stop
-  int volume
-  int time
-  string playerName
-  string title
-  string composer
-  string artist
-  string album
-*/
+void InbusPublisher::OnExit() {
+  delete inbusPublisher_;
+}
 
+bool InbusPublisher::HasNewRenderInfo(const RenderInfo &render_info) {
 
-#endif
+  return (
+    (render_info.is_waiting_for_renderer != lastRenderInfo_.is_waiting_for_renderer)
+    || (render_info.play_state != lastRenderInfo_.play_state)
+    || (render_info.title != lastRenderInfo_.title)
+    || (render_info.composer != lastRenderInfo_.composer)
+    || (render_info.artist != lastRenderInfo_.artist)
+    || (render_info.album != lastRenderInfo_.album)
+  );
+}
+
+std::string InbusPublisher::CreateJSONMessage(const RenderInfo &render_info) {
+
+  std::ostringstream message;
+  message << "{"
+    << "\"ready\":" << (render_info.is_waiting_for_renderer ? 0 : 1)
+    << ",\"playstate\":" << (int)render_info.play_state
+    << ",\"title\": \"" << render_info.title << "\""
+    << ",\"composer\":\"" << render_info.composer << "\""
+    << ",\"artist\":\"" << render_info.artist << "\""
+    << ",\"album\":\"" << render_info.album << "\""
+  << "}";
+
+  return message.str();
+}
+
+#endif // USE_INBUS
 

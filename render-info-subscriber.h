@@ -15,17 +15,17 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#ifndef UPNP_DISPLAY_RENDER_INFO_CONSUMER_
-#define UPNP_DISPLAY_RENDER_INFO_CONSUMER_
+#ifndef UPNP_DISPLAY_RENDER_INFO_SUBSCRIBER_
+#define UPNP_DISPLAY_RENDER_INFO_SUBSCRIBER_
 
 #include <string>
 
 #include "render-info.h"
 
-// Interface for consumers of RenderInfo
-class RenderInfoConsumer {
+// Interface for subscribers of RenderInfo
+class RenderInfoSubscriber {
 public:
-  virtual ~RenderInfoConsumer() {}
+  virtual ~RenderInfoSubscriber() {}
 
   // Invoked on start
   virtual void OnStart() = 0;
@@ -37,4 +37,4 @@ public:
   virtual void OnExit() = 0;
 };
 
-#endif  // UPNP_DISPLAY_RENDER_INFO_CONSUMER_
+#endif  // UPNP_DISPLAY_RENDER_INFO_SUBSCRIBER_

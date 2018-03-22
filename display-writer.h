@@ -20,12 +20,12 @@
 
 #include <string>
 
-#include "render-info-consumer.h"
+#include "render-info-subscriber.h"
 
 class Printer;
 class Scroller;
 
-class DisplayWriter : public RenderInfoConsumer {
+class DisplayWriter : public RenderInfoSubscriber {
 public:
   // Manages scrollable two-line based content and sends it to a Printer
   DisplayWriter(Printer *printer);

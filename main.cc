@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  RenderInfoConsumer* consumer = NULL;
+  RenderInfoSubscriber* subscriber = NULL;
   Printer *printer = NULL;
   if ((output_mode == Console) || (output_mode == LCD)) {
     if (output_mode == Console) 
@@ -119,11 +119,11 @@ int main(int argc, char *argv[]) {
         printer = display;
       }
     }
-    consumer = new DisplayWriter(printer);
+    subscriber = new DisplayWriter(printer);
   } 
 #ifdef USE_INBUS
   else if (output_mode == Inbus) {
-    consumer = new InbusPublisher(printer);
+    subscriber = new InbusPublisher();
   }
 #endif
 
@@ -133,11 +133,11 @@ int main(int argc, char *argv[]) {
     daemon(0, 0);
   }
 
-  UPnPDisplay ui(match_name, consumer);
+  UPnPDisplay ui(match_name, subscriber);
   ControllerState controller(&ui);
   ui.Loop();
 
-  delete consumer;
+  delete subscriber;
   delete printer;
 
   return 0;
