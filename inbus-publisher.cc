@@ -23,7 +23,6 @@
 
 #include <inbus/publisher.h>
 
-
 InbusPublisher::InbusPublisher() {
 }
 
@@ -41,6 +40,7 @@ void InbusPublisher::OnRenderInfo(const RenderInfo &render_info) {
   if(HasNewRenderInfo(render_info)) {
     inbusPublisher_->publish(CreateJSONMessage(render_info));
   }
+  lastRenderInfo_ = render_info;
 }
 
 void InbusPublisher::OnExit() {
@@ -69,10 +69,12 @@ std::string InbusPublisher::CreateJSONMessage(const RenderInfo &render_info) {
     << ",\"composer\":\"" << render_info.composer << "\""
     << ",\"artist\":\"" << render_info.artist << "\""
     << ",\"album\":\"" << render_info.album << "\""
-  << "}";
+    << "}";
 
   return message.str();
 }
+
+
 
 #endif // USE_INBUS
 
