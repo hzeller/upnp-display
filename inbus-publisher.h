@@ -49,7 +49,7 @@ class Publisher;
 class InbusPublisher : public RenderInfoSubscriber {
 
 public:
-  InbusPublisher();
+  InbusPublisher(const std::string& app_name);
   virtual ~InbusPublisher();
 
   virtual void OnStart();
@@ -59,6 +59,7 @@ public:
 private:
   Publisher* inbusPublisher_; 
   RenderInfo lastRenderInfo_;
+  std::string appName_;
     
   bool HasNewRenderInfo(const RenderInfo &render_info);
   std::string CreateJSONMessage(const RenderInfo &render_info);

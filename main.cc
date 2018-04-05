@@ -42,11 +42,17 @@ int main(int argc, char *argv[]) {
 #endif
   };
   std::string match_name;
+  std::string getopt_params = "hn:w:o:c";
+#ifdef USE_INBUS
+    getopt_params += "a:";
+  std::string app_name = "upnp-display";
+#endif
+
   int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
   bool as_daemon = false;
   OutputMode output_mode = LCD;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:o:c")) != -1) {
+  while ((opt = getopt(argc, argv, getopt_params.c_str())) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
@@ -74,6 +80,13 @@ int main(int argc, char *argv[]) {
       }
       break;
 
+#ifdef USE_INBUS
+    case 'a': {
+      app_name = optarg; 
+      break;
+    }
+#endif
+
     case 'w': {
       int w = atoi(optarg);
       if (w < 8) {
@@ -92,10 +105,11 @@ int main(int argc, char *argv[]) {
               "\t-w <display-width>          : Set display width.\n"
               "\t-d                          : Run as daemon.\n"
               "\t-o <output-target>          : Output to a specific render target:\n"
-              "\t         <l|lcd>            :   LCD (default).\n"
-              "\t         <c|console>        :   console (debug).\n"
+              "\t         <l|lcd>                LCD (default).\n"
+              "\t         <c|console>            console (debug).\n"
 #ifdef USE_INBUS
-              "\t         <i|inbus>          :   Inbus.\n"
+              "\t         <i|inbus>              Inbus.\n"
+              "\t-a <app-name>               : Publish as <app-name>. Default is \"upnp-display\".\n"
 #endif
               "\t-c                          : Same as '-o console'. Other targets are ignored.\n"
               );
@@ -123,7 +137,7 @@ int main(int argc, char *argv[]) {
   } 
 #ifdef USE_INBUS
   else if (output_mode == Inbus) {
-    subscriber = new InbusPublisher();
+    subscriber = new InbusPublisher(app_name);
   }
 #endif
 

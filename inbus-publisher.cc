@@ -23,7 +23,8 @@
 
 #include <inbus/publisher.h>
 
-InbusPublisher::InbusPublisher() {
+InbusPublisher::InbusPublisher(const std::string& app_name) 
+    : appName_(app_name) {
 }
 
 InbusPublisher::~InbusPublisher() {
@@ -31,7 +32,7 @@ InbusPublisher::~InbusPublisher() {
 
 void InbusPublisher::OnStart() {
   lastRenderInfo_.is_waiting_for_renderer = true;
-  inbusPublisher_ = new Publisher("upnp-display");
+  inbusPublisher_ = new Publisher(appName_);
   inbusPublisher_->publish(CreateJSONMessage(lastRenderInfo_));
 }
 
