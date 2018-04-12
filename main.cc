@@ -44,8 +44,9 @@ int main(int argc, char *argv[]) {
   std::string match_name;
   std::string getopt_params = "hn:w:o:c";
 #ifdef USE_INBUS
-    getopt_params += "a:";
-  std::string app_name = "upnp-display";
+  getopt_params += "a:t:";
+  std::string app_key = "upnp-display";
+  int app_type = 0;
 #endif
 
   int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
@@ -82,7 +83,11 @@ int main(int argc, char *argv[]) {
 
 #ifdef USE_INBUS
     case 'a': {
-      app_name = optarg; 
+      app_key = optarg; 
+      break;
+    }
+    case 't': {
+      app_type = atoi(optarg);;
       break;
     }
 #endif
@@ -109,7 +114,8 @@ int main(int argc, char *argv[]) {
               "\t         <c|console>            console (debug).\n"
 #ifdef USE_INBUS
               "\t         <i|inbus>              Inbus.\n"
-              "\t-a <app-name>               : Publish as <app-name>. Default is \"upnp-display\".\n"
+              "\t-a <app-key>                : Publish as <app-key>. Default is \"upnp-display\".\n"
+              "\t-t <app-type>                : Publish with <app-type>. Default is 0.\n"
 #endif
               "\t-c                          : Same as '-o console'. Other targets are ignored.\n"
               );
@@ -137,7 +143,7 @@ int main(int argc, char *argv[]) {
   } 
 #ifdef USE_INBUS
   else if (output_mode == Inbus) {
-    subscriber = new InbusPublisher(app_name);
+    subscriber = new InbusPublisher(app_key, app_type);
   }
 #endif
 

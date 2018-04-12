@@ -23,8 +23,10 @@
 
 #include <inbus/publisher.h>
 
-InbusPublisher::InbusPublisher(const std::string& app_name) 
-    : appName_(app_name) {
+InbusPublisher::InbusPublisher(const std::string& app_key, int app_type) 
+    : appKey_(app_key)
+    , appType_(app_type)
+{
 }
 
 InbusPublisher::~InbusPublisher() {
@@ -32,8 +34,8 @@ InbusPublisher::~InbusPublisher() {
 
 void InbusPublisher::OnStart() {
   lastRenderInfo_.is_waiting_for_renderer = true;
-  inbusPublisher_ = new Publisher(appName_);
-  inbusPublisher_->publish(CreateJSONMessage(lastRenderInfo_));
+  inbusPublisher_ = new Publisher(appKey_);
+  inbusPublisher_->publish(CreateJSONMessage(lastRenderInfo_), appType_);
 }
 
 void InbusPublisher::OnRenderInfo(const RenderInfo &render_info) {
