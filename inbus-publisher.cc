@@ -75,7 +75,7 @@ std::string InbusPublisher::CreateJSONMessage(const RenderInfo &render_info) {
     << ",\"album\":\"" << render_info.album << "\""
     << "}";
 
-  std::cout << message.str() << std::endl << std::flush;
+  //std::cout << message.str() << std::endl << std::flush;
 
   return message.str();
 }
