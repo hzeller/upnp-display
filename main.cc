@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 #ifdef USE_INBUS
               "\t         <i|inbus>              Inbus.\n"
               "\t-a <app-key>                : Publish as <app-key>. Default is \"upnp-display\".\n"
-              "\t-t <app-type>                : Publish with <app-type>. Default is 0.\n"
+              "\t-t <app-type>               : Publish with <app-type>. Default is 0.\n"
 #endif
               "\t-c                          : Same as '-o console'. Other targets are ignored.\n"
               );
