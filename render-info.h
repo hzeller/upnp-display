@@ -15,11 +15,31 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#ifndef UPNP_DISPLAY_RENDER_INFO_
+#define UPNP_DISPLAY_RENDER_INFO_
 
-#include "printer.h"
+#include <string>
 
-#include <stdio.h>
+enum PlayState {
+  Paused,
+  Playing,
+  Stopped
+};
 
-void ConsolePrinter::Print(int line, const std::string &text) {
-  printf("[%d]%s\n", line, text.c_str());
-}
+// Contains info about what is being rendered
+struct RenderInfo {
+  // If true, playerName contains the name of the renderer
+  // for which to wait and all other variables are meaningless.
+  bool is_waiting_for_renderer;
+
+  PlayState play_state;
+  std::string volume;
+  int time;
+  std::string player_name; 
+  std::string title;
+  std::string composer;
+  std::string artist;
+  std::string album;
+};
+
+#endif  // UPNP_DISPLAY_RENDER_INFO_

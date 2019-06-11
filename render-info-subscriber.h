@@ -15,22 +15,26 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-#ifndef UPNP_DISPLAY_PRINTER_
-#define UPNP_DISPLAY_PRINTER_
+#ifndef UPNP_DISPLAY_RENDER_INFO_SUBSCRIBER_
+#define UPNP_DISPLAY_RENDER_INFO_SUBSCRIBER_
 
 #include <string>
 
-// Interface for a simple display.
-class Printer {
+#include "render-info.h"
+
+// Interface for subscribers of RenderInfo
+class RenderInfoSubscriber {
 public:
-  virtual ~Printer() {}
+  virtual ~RenderInfoSubscriber() {}
 
-  virtual int width() const = 0;
+  // Invoked on start
+  virtual void OnStart() = 0;
 
-  // Print line. The text is given in UTF-8, the printer has to attempt
-  // to try its best to render it.
-  virtual void Print(int line, const std::string &text) = 0;
+  // Invoked periodically with up-to-date render info 
+  virtual void OnRenderInfo(const RenderInfo &render_info) = 0;
+
+  // To be invoked on termination 
+  virtual void OnExit() = 0;
 };
 
-#endif // UPNP_DISPLAY_PRINTER_ 
+#endif  // UPNP_DISPLAY_RENDER_INFO_SUBSCRIBER_

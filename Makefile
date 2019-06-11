@@ -1,11 +1,21 @@
 LIBS=$(shell pkg-config --cflags --libs libupnp)
+
+EXTRA_CFLAGS=    
+EXTRA_OBJECTS=
+ifdef USE_INBUS
+    LIBS+=$(shell pkg-config --cflags --libs libinbusclient)
+    EXTRA_CFLAGS+=-DUSE_INBUS
+    EXTRA_OBJECTS+=inbus-publisher.o
+endif
+
 INCLUDES=$(shell pkg-config --cflags --libs libupnp)
 
-OBJECTS=main.o upnp-display.o renderer-state.o printer.o controller-state.o \
-	lcd-display.o gpio.o scroller.o font-data.o
+OBJECTS=main.o upnp-display.o display-writer.o renderer-state.o \
+  controller-state.o console-printer.o lcd-display.o gpio.o scroller.o font-data.o \
+  $(EXTRA_OBJECTS)
 
-CFLAGS=-g -Wall $(INCLUDES)
-CXXFLAGS=-g -Wall $(INCLUDES)
+CFLAGS=-g -Wall $(INCLUDES) $(EXTRA_CFLAGS)
+CXXFLAGS=-g -Wall $(INCLUDES) $(EXTRA_CFLAGS)
 
 upnp-display: $(OBJECTS)
 	g++ -Wall $^ $(LIBS) -o $@

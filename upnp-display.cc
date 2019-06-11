@@ -26,10 +26,9 @@
 
 #include <upnp/ithread.h>
 
-#include "printer.h"
+#include "render-info.h"
+#include "render-info-subscriber.h"
 #include "renderer-state.h"
-#include "scroller.h"
-#include "utf8.h"
 
 // Time between display updates.
 // This influences scroll speed and 'pause' blinking.
@@ -42,154 +41,52 @@ static const int kVolumeFlashTime = 3;
 // We do the signal receiving the classic static way, as creating callbacks to
 // c functions is more readable than with c++ methods :)
 volatile bool signal_received = false;
-static void SigReceiver(int signo) {
+static void SigReceiver(int) {
   signal_received = true;
 }
 
-#define STOP_SYMBOL "\u2b1b"   // ⬛
-#define PLAY_SYMBOL "\u25b6"   // ▶
-#define PAUSE_SYMBOL "]["      // TODO: add symbol in private unicode range.
-
-UPnPDisplay::UPnPDisplay(const std::string &friendly_name, Printer *printer)
+UPnPDisplay::UPnPDisplay(const std::string &friendly_name, RenderInfoSubscriber *subscriber)
   : player_match_name_(friendly_name),
-    printer_(printer), current_state_(NULL) {
+    subscriber_(subscriber), current_state_(NULL) {
   ithread_mutex_init(&mutex_, NULL);
   signal(SIGTERM, &SigReceiver);
   signal(SIGINT, &SigReceiver);
 }
   
 void UPnPDisplay::Loop() {
-  std::string player_name;
-  std::string title, composer, artist, album;
-  std::string play_state = "STOPPED";
-  std::string volume, previous_volume;
-  int time = 0;
 
-  Scroller first_line_scroller("  -  ");
-  Scroller second_line_scroller("  -  ");
-  unsigned char blink_time = 0;
-  int volume_countdown = 0;
-
+  RenderInfo render_info;
   signal_received = false;
+  subscriber_->OnStart();
+
   while (!signal_received) {
     usleep(kDisplayUpdateMillis * 1000);
 
-    bool renderer_available = false;
+    render_info.is_waiting_for_renderer = true;
     ithread_mutex_lock(&mutex_);
     if (current_state_ != NULL) {
-      renderer_available = true;
-      player_name = current_state_->friendly_name();
-      title = current_state_->GetVar("Meta_Title");
-      composer = current_state_->GetVar("Meta_Composer");
-      artist = current_state_->GetVar("Meta_Artist");
+      render_info.is_waiting_for_renderer = false;
+      render_info.player_name = current_state_->friendly_name();
+      render_info.title = current_state_->GetVar("Meta_Title");
+      render_info.composer = current_state_->GetVar("Meta_Composer");
+      render_info.artist = current_state_->GetVar("Meta_Artist");
       std::string creator = current_state_->GetVar("Meta_Creator");
-      if (artist == composer && !creator.empty() && creator != artist) {
-        artist = creator;
+      if (render_info.artist == render_info.composer 
+        && !creator.empty() && creator != render_info.artist) {
+        render_info.artist = creator;
       }
-      album = current_state_->GetVar("Meta_Album");
-      play_state = current_state_->GetVar("TransportState");
-      time = parseTime(current_state_->GetVar("RelativeTimePosition"));
+      render_info.album = current_state_->GetVar("Meta_Album");
+      render_info.play_state = parsePlayState(current_state_->GetVar("TransportState"));
+      render_info.time = parseTime(current_state_->GetVar("RelativeTimePosition"));
       //duration = parseTime(current_state_->GetVar("CurrentTrackDuration"));
-      volume = current_state_->GetVar("Volume");
+      render_info.volume = current_state_->GetVar("Volume");
     }
     ithread_mutex_unlock(&mutex_);
 
-    if (!renderer_available) {
-      printer_->Print(0, "Waiting for");
-      std::string to_print = (player_match_name_.empty()
-                              ? "any Renderer"
-                              : player_match_name_);
-      CenterAlign(&to_print, printer_->width());
-      printer_->Print(1, to_print);
-      continue;
-    }
-
-    // First line is "[composer: ]Title"
-    std::string print_line = composer;
-    if (!print_line.empty()) print_line.append(": ");
-    print_line.append(title);
-
-    const bool no_title_to_display = (print_line.empty() && album.empty());
-    if (no_title_to_display) {
-      // No title, so show at least player name.
-      print_line = player_name;
-      CenterAlign(&print_line, printer_->width());
-      printer_->Print(0, print_line);
-    }
-
-    // Second line: if there is a volume change, display it for kVolumeFlashTime
-    if (volume != previous_volume || volume_countdown > 0) {
-      if (!previous_volume.empty()) {
-        if (volume != previous_volume) {
-          volume_countdown = kVolumeFlashTime;
-        } else {
-          --volume_countdown;
-        }
-        std::string volume_line = "Volume " + volume;
-        CenterAlign(&volume_line, printer_->width());
-        printer_->Print(1, volume_line);
-      }
-      previous_volume = volume;
-      continue;
-    }
-
-    if (no_title_to_display) {
-      // Nothing really to display ? Show play-state.
-      print_line = play_state;
-      if (play_state == "STOPPED")
-        print_line = STOP_SYMBOL " [Stopped]";
-      else if (play_state == "PAUSED_PLAYBACK")
-        print_line = PAUSE_SYMBOL" [Paused]";
-      else if (play_state == "PLAYING")
-        print_line = PLAY_SYMBOL " [Playing]";
-
-      CenterAlign(&print_line, printer_->width());
-      printer_->Print(1, print_line);
-      continue;
-    }
-
-    // Alright, we have a title. If short enough, center, otherwise scroll.
-    CenterAlign(&print_line, printer_->width());
-    first_line_scroller.SetValue(print_line, printer_->width());
-    printer_->Print(0, first_line_scroller.GetScrolledContent());
-
-    std::string formatted_time;
-    if (play_state == "STOPPED") {
-      formatted_time = "  " STOP_SYMBOL " ";
-    } else {
-      formatted_time = formatTime(time);
-      // 'Blinking' time when paused.
-      if (play_state == "PAUSED_PLAYBACK" && blink_time % 2 == 0) {
-        formatted_time = std::string(formatted_time.size(), ' ');
-      }
-    }
-
-    // Assemble second line from album and artist.
-    print_line = album;
-    if (!artist.empty() && artist != album) {
-      if (!print_line.empty()) print_line.append("/");
-      print_line.append(artist);
-    }
-
-    // Show album/artist right aligned in space next to time. Or scroll if long.
-    const int remaining_len = printer_->width() - formatted_time.length() - 1;
-    RightAlign(&print_line, remaining_len);
-    second_line_scroller.SetValue(print_line, remaining_len);
-    printer_->Print(1, formatted_time + " "
-                    + second_line_scroller.GetScrolledContent());
-
-    blink_time++;
-    first_line_scroller.NextTick();
-    second_line_scroller.NextTick();
+    subscriber_->OnRenderInfo(render_info);
   }
 
-  std::string msg = "Goodbye!";
-  CenterAlign(&msg, printer_->width());
-  printer_->Print(0, msg);
-  // Show off unicode :)
-  msg = "\u2192 \u266a\u266b\u266a\u2669 \u2190";  // → ♪♫♩ ←
-  CenterAlign(&msg, printer_->width());
-  printer_->Print(1, msg);
+  subscriber_->OnExit();
 }
 
 void UPnPDisplay::AddRenderer(const std::string &uuid,
@@ -225,33 +122,14 @@ int UPnPDisplay::parseTime(const std::string &upnp_time) {
   return 0;
 }
 
-std::string UPnPDisplay::formatTime(int time) {
-  const bool is_neg = (time < 0);
-  time = abs(time);
-  const int hour = time / 3600; time %= 3600;
-  const int minute = time / 60; time %= 60;
-  const int second = time;
-  char buf[32];
-  char *pos = buf;
-  if (is_neg) *pos++ = '-';
-  if (hour > 0) {
-    snprintf(pos, sizeof(buf)-1, "%dh%02d:%02d", hour, minute, second);
-  } else {
-    snprintf(pos, sizeof(buf)-1, "%d:%02d", minute, second);
-  }
-  return buf;
+PlayState UPnPDisplay::parsePlayState(const std::string &play_state) {
+  if(play_state == "STOPPED")
+    return Stopped;
+  else if(play_state == "PAUSED_PLAYBACK")
+    return Paused;
+  else if(play_state == "PLAYING")
+    return Playing;
+
+  return Stopped;
 }
 
-void UPnPDisplay::CenterAlign(std::string *to_print, int width) {
-  const int len = utf8_character_count(to_print->begin(), to_print->end());
-  if (len < width) {
-    to_print->insert(0, std::string((width - len) / 2, ' '));
-  }
-}
-
-void UPnPDisplay::RightAlign(std::string *to_print, int width) {
-  const int len = utf8_character_count(to_print->begin(), to_print->end());
-  if (len < width) {
-    to_print->insert(0, std::string(width - len, ' '));
-  }
-}

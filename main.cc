@@ -21,20 +21,39 @@
 
 #include "controller-state.h"
 #include "upnp-display.h"
+#include "display-writer.h"
 #include "lcd-display.h"
-#include "printer.h"
+#include "console-printer.h"
+
+#ifdef USE_INBUS
+#include "inbus-publisher.h"
+#endif
 
 // Width of your display. Usually this is just 16 wide, but you can get 24 or
 // even 40 wide displays. You can also set this via the -w option.
 #define DEFAULT_LCD_DISPLAY_WIDTH 16
 
 int main(int argc, char *argv[]) {
+  enum OutputMode { 
+    LCD
+    ,Console 
+#ifdef USE_INBUS
+    ,Inbus
+#endif
+  };
   std::string match_name;
+  std::string getopt_params = "hn:w:o:c";
+#ifdef USE_INBUS
+  getopt_params += "a:t:";
+  std::string app_key = "upnp-display";
+  int app_type = 0;
+#endif
+
   int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
   bool as_daemon = false;
-  bool on_console = false;
+  OutputMode output_mode = LCD;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:dc")) != -1) {
+  while ((opt = getopt(argc, argv, getopt_params.c_str())) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
@@ -45,8 +64,33 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'c':
-      on_console = true;
+        output_mode = Console;
+        break;
+
+    case 'o':
+      if (optarg != NULL) {
+        std::string optarg_str = optarg;
+        if ((optarg_str == "l") || (optarg_str == "lcd"))
+          output_mode = LCD;
+        else if ((optarg_str == "c") || (optarg_str == "console"))
+          output_mode = Console;
+#ifdef USE_INBUS
+        else if ((optarg_str == "i") || (optarg_str == "inbus"))
+          output_mode = Inbus;
+#endif
+      }
       break;
+
+#ifdef USE_INBUS
+    case 'a': {
+      app_key = optarg; 
+      break;
+    }
+    case 't': {
+      app_type = atoi(optarg);;
+      break;
+    }
+#endif
 
     case 'w': {
       int w = atoi(optarg);
@@ -61,29 +105,47 @@ int main(int argc, char *argv[]) {
     case 'h':
     default:
       fprintf(stderr, "Usage: %s <options>\n", argv[0]);
-      fprintf(stderr, "\t-n <name or \"uuid:\"<uuid>"
+      fprintf(stderr, "\t-n <name or \"uuid  :\" <uuid>"
               ": Connect to this renderer.\n"
-              "\t-w <display-width>       : Set display width.\n"
-              "\t-d                       : Run as daemon.\n"
-              "\t-c                       : On console instead LCD (debug).\n"
+              "\t-w <display-width>          : Set display width.\n"
+              "\t-d                          : Run as daemon.\n"
+              "\t-o <output-target>          : Output to a specific render target:\n"
+              "\t         <l|lcd>                LCD (default).\n"
+              "\t         <c|console>            console (debug).\n"
+#ifdef USE_INBUS
+              "\t         <i|inbus>              Inbus.\n"
+              "\t-a <app-key>                : Publish as <app-key>. Default is \"upnp-display\".\n"
+              "\t-t <app-type>               : Publish with <app-type>. Default is 0.\n"
+#endif
+              "\t-c                          : Same as '-o console'. Other targets are ignored.\n"
               );
       return 1;
     }
   }
 
+  RenderInfoSubscriber* subscriber = NULL;
   Printer *printer = NULL;
-  if (on_console) {
-    printer = new ConsolePrinter(display_width);
-  } else {
-    LCDDisplay *display = new LCDDisplay(display_width);
-    if (!display->Init()) {
-      fprintf(stderr, "You need to run this as root to have access "
+  if ((output_mode == Console) || (output_mode == LCD)) {
+    if (output_mode == Console) 
+      printer = new ConsolePrinter(display_width);
+    else {
+      LCDDisplay *display = new LCDDisplay(display_width);
+      if (!display->Init()) {
+        fprintf(stderr, "You need to run this as root to have access "
               "to GPIO pins. Run with sudo (or with option -c to output on "
               "console instead).\n");
-      return 1;
+        return 1;
+      } else {
+        printer = display;
+      }
     }
-    printer = display;
+    subscriber = new DisplayWriter(printer);
+  } 
+#ifdef USE_INBUS
+  else if (output_mode == Inbus) {
+    subscriber = new InbusPublisher(app_key, app_type);
   }
+#endif
 
   // TODO: drop priviliges (GPIO is set up at this point).
 
@@ -91,10 +153,11 @@ int main(int argc, char *argv[]) {
     daemon(0, 0);
   }
 
-  UPnPDisplay ui(match_name, printer);
+  UPnPDisplay ui(match_name, subscriber);
   ControllerState controller(&ui);
   ui.Loop();
 
+  delete subscriber;
   delete printer;
 
   return 0;
