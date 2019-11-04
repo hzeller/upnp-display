@@ -93,6 +93,13 @@ with `make`:
     make
     sudo make install
 
+### GPIO Preparation
+
+Make sure you have not any services running that might interfere with the
+GPIO pins. In particular you want to have the serial interface,
+1-wire protocol and SPI disabled (use `sudo raspi-config`, then
+choose "Interface Options").
+
 ### Start the program
 
 Simple; for an LCD with width 16, start the program as such:
