@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
   }
 
   UPnPDisplay ui(match_name, printer);
-  ControllerState controller(&ui);
+  ControllerState controller(&ui, printer);
   ui.Loop();
 
   delete printer;

@@ -20,18 +20,38 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "observer.h"
 #include "renderer-state.h"
 
+#include <upnptools.h>
+
 static const char kMediaRendererDevice[] =
   "urn:schemas-upnp-org:device:MediaRenderer:1";
 
-ControllerState::ControllerState(ControllerObserver *observer)
+ControllerState::ControllerState(ControllerObserver *observer,
+                                 Printer *printer)
   : observer_(observer) {
   assert(observer != NULL);  // without, it wouldn't make much sense.
   ithread_mutex_init(&mutex_, NULL);
-  UpnpInit(NULL, 0);
+  // If network is not up yet, UpnpInit() fails. Retry.
+  // This can happen if system just booted and DHCP is not settled yet.
+  int rc = UpnpInit(NULL, 0);
+  int retries_left = 60;
+  static const int kRetryTimeMs = 1000;
+  while (rc != UPNP_E_SUCCESS && retries_left--) {
+    usleep(kRetryTimeMs * 1000);
+    char buffer[40];
+    snprintf(buffer, sizeof(buffer), "Network...%d", retries_left);
+    printer->Print(0, buffer);
+    fprintf(stderr, "UpnpInit() Error: %s (%d). Retrying...(%ds)",
+            UpnpGetErrorMessage(rc), rc, retries_left);
+    rc = UpnpInit(NULL, 0);
+  }
+  if (rc != UPNP_E_SUCCESS) {
+    fprintf(stderr, "UpnpInit() Error: %s (%d).", UpnpGetErrorMessage(rc), rc);
+  }
   UpnpRegisterClient(&UpnpEventHandler, this, &device_);
 }
 

@@ -24,12 +24,14 @@
 #include <string>
 #include <map>
 
+#include "printer.h"
+
 class ControllerObserver;
 class RendererState;
 
 class ControllerState {
 public:
-  ControllerState(ControllerObserver *observer);
+  ControllerState(ControllerObserver *observer, Printer *printer);
 
 private:
   void Register(const UpnpDiscovery *discovery);
