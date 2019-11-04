@@ -5,7 +5,8 @@ This little program is a passive UPnP control point that connects to a UPnP/DNLA
 renderer (e.g. [gmrender-resurrect][]) anywhere in your
 local network.
 It listens for changes in the state of the player (Title, Album etc.,
-Play/Paused/Stop) and displays it on a common 16x2 LCD display.
+Play/Paused/Stop) and displays it on a common 16x2 LCD display or other
+HD44780 compatible displays.
 
 ### Connect the Hardware
 
@@ -25,7 +26,9 @@ First: identify the pins on the LCD display. They typically have 16 solder pins
 edge of the board. Often marked with a '1' or a dot.
 
 We want to connect them to the outer row of the GPIO connector, which are 13
-pins. The GPIO connector _P1_ has two rows, the pins are counted in
+pins (This sentence refers to the early Raspberry Pis that only had 26 pins;
+newer Pis have more, but the first pins are the same).
+The GPIO connector _P1_ has two rows, the pins are counted in
 zig-zag, so this means that we're connecting to the _even_ pins (P1-02 .. P1-26,
 see http://elinux.org/RPi_Low-level_peripherals for reference).
 
@@ -70,7 +73,7 @@ Now, plug this into the outer row of your Raspberry Pi GPIO:
 
 Here are the commands you need to execute on your Raspberry Pi shell.
 
-First, you need to have libupnp installed.
+First, you need to have libupnp installed (version >= 1.8)
 
     sudo apt-get install libupnp-dev
 
@@ -85,24 +88,28 @@ it:
 
 Now change into the directory of the checked out source and simply compile it
 with `make`:
-   
+
     cd upnp-display
     make
-
+    sudo make install
 
 ### Start the program
 
-You need to start the program as root, as it needs to access the GPIO pins:
+Simple; for an LCD with width 16, start the program as such:
 
-    sudo ./upnp-display
+    upnp-display -w 16
+
+(Note, the program wants to run with realtime priority if possible to make
+sure the hardware timing talking to the LCD is correct. The program will
+print a message if you need to do something about that).
 
 The LCD display should now print that it is waiting for any renderer;
 once it found a renderer, it will display the title/album playing.
 
-If you have multiple renderers in your network, you can select the particular
-one you're interested in with the `-n` option:
+If you have multiple renderers in your network, you can select a particular
+one with the `-n` option:
 
-    sudo ./upnp-display -n "Living Room"
+    upnp-display -n "Living Room"
 
 Now, if you use your entertainment system the usual way, this display
 shows what currently is played. You can deploy this multiple times
@@ -130,8 +137,8 @@ Markus Kuhn).
 
 This works of course only well if there are not more than 8 different non-ASCII
 characters on the screen - if you have song titles that are all outside this
-range (e.g. your language uses an entirely different script), then this is likely
-to fail.
+range (e.g. your language uses an entirely different script), then this is
+likely to fail.
 
 Here you see an example that uses the non-ASCII characters
 &auml;, &uuml; and &szlig;
@@ -145,9 +152,9 @@ into a separate libray).
 Most displays you can get are HD44780 compatible; There are as well
 24x2 and 40x2 displays available (also pretty cheap). I found that 16
 characters is a bit on the low side to display a useful amount without constant
-scrolling. If you get another display, change the #define LCD_DISPLAY_WIDTH in
-upnp-display.cc. Usually, the pin-out looks a bit different (2 rows with 7 or 8
-lines), but typically it has the same data lines on the same pin numbers - check
+scrolling. If you get another display, use the `-w` option to choose your
+width. Even if the pin-out looks a bit different (2 rows with 7 or 8
+lines), they typically have the same data lines on the same pin numbers - check
 your data sheet.
 
 Here a 40 character display from ebay (DMC-50037N)
@@ -158,11 +165,11 @@ If you want to connect the display on some other computer
 than the Paspberry Pi, you don't have GPIO pins. You have to change the hardware
 interfacing and modify lcd-display.cc
 
-[parts]: https://github.com/hzeller/upnp-display/raw/master/images/basic-connector-small.jpg
-[soldered]: https://github.com/hzeller/upnp-display/raw/master/images/soldered-small.jpg
-[connected]: https://github.com/hzeller/upnp-display/raw/master/images/plugged-in-small.jpg
-[in-operation]: https://github.com/hzeller/upnp-display/raw/master/images/in-operation-small.jpg
-[utf-8-display]: https://github.com/hzeller/upnp-display/raw/master/images/utf8-lcd-small.jpg
-[display-40-char]: https://github.com/hzeller/upnp-display/raw/master/images/display-40-char-small.jpg
+[parts]: ./images/basic-connector-small.jpg
+[soldered]: ./images/soldered-small.jpg
+[connected]: ./images/plugged-in-small.jpg
+[in-operation]: ./images/in-operation-small.jpg
+[utf-8-display]: ./images/utf8-lcd-small.jpg
+[display-40-char]: ./images/display-40-char-small.jpg
 [gmrender-resurrect]: http://github.com/hzeller/gmrender-resurrect
 [ucs-fixed]: http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html

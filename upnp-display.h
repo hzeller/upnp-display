@@ -1,4 +1,4 @@
-// -*- c++ -*-
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -21,7 +21,7 @@
 #include <string>
 
 #include "observer.h"
-#include <upnp/ithread.h>
+#include <ithread.h>
 
 class Printer;
 
@@ -31,7 +31,7 @@ public:
   // registered name (if empty string, waits for the first available).
   // Outputs to "printer".
   UPnPDisplay(const std::string &renderer_registered_name, Printer *printer);
-  
+
   // Main Loop. Only exits on catching SIGTERM or SIGINT (Ctrl-c)
   void Loop();
 
@@ -42,7 +42,7 @@ public:
                            const RendererState *state);
   // Receive notification of renderer removed.
   virtual void RemoveRenderer(const std::string &uuid);
-                                     
+
 private:
   // Parse time from UPnP variable.
   int parseTime(const std::string &upnp_time);

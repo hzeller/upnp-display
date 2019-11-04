@@ -1,4 +1,4 @@
-//  -*- c++ -*-
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -32,12 +32,12 @@ public:
   ControllerState(ControllerObserver *observer);
 
 private:
-  void Register(const struct Upnp_Discovery *discovery);
-  void Unregister(const struct Upnp_Discovery *discovery);
-  void ReceiveEvent(const struct Upnp_Event *data);
+  void Register(const UpnpDiscovery *discovery);
+  void Unregister(const UpnpDiscovery *discovery);
+  void ReceiveEvent(const UpnpEvent *data);
 
   // Callback from upnp library.
-  static int UpnpEventHandler(Upnp_EventType event, void *event_data,
+  static int UpnpEventHandler(Upnp_EventType_e event, const void *event_data,
                               void *userdata);
 
   ControllerObserver *const observer_;

@@ -1,3 +1,4 @@
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -24,7 +25,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include <upnp/ithread.h>
+#include <ithread.h>
 
 #include "printer.h"
 #include "renderer-state.h"
@@ -42,7 +43,7 @@ static const int kVolumeFlashTime = 3;
 // We do the signal receiving the classic static way, as creating callbacks to
 // c functions is more readable than with c++ methods :)
 volatile bool signal_received = false;
-static void SigReceiver(int signo) {
+static void SigReceiver(int) {
   signal_received = true;
 }
 
@@ -57,7 +58,7 @@ UPnPDisplay::UPnPDisplay(const std::string &friendly_name, Printer *printer)
   signal(SIGTERM, &SigReceiver);
   signal(SIGINT, &SigReceiver);
 }
-  
+
 void UPnPDisplay::Loop() {
   std::string player_name;
   std::string title, composer, artist, album;
@@ -88,8 +89,10 @@ void UPnPDisplay::Loop() {
       }
       album = current_state_->GetVar("Meta_Album");
       play_state = current_state_->GetVar("TransportState");
-      time = parseTime(current_state_->GetVar("RelativeTimePosition"));
-      //duration = parseTime(current_state_->GetVar("CurrentTrackDuration"));
+      // Relative time pos is not evented. TODO: query actively.
+      //time = parseTime(current_state_->GetVar("RelativeTimePosition"));
+      // for now, we just show the duration.
+      time = parseTime(current_state_->GetVar("CurrentTrackDuration"));
       volume = current_state_->GetVar("Volume");
     }
     ithread_mutex_unlock(&mutex_);
@@ -215,7 +218,7 @@ void UPnPDisplay::RemoveRenderer(const std::string &uuid) {
   }
   ithread_mutex_unlock(&mutex_);
 }
-                                     
+
 int UPnPDisplay::parseTime(const std::string &upnp_time) {
   int hour = 0;
   int minute = 0;

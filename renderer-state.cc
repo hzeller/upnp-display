@@ -1,4 +1,4 @@
-//  -*- c++ -*-
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -21,9 +21,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <upnp/upnp.h>
-#include <upnp/upnptools.h>
-#include <upnp/ithread.h>
+
+#include <upnp.h>
+#include <upnptools.h>
+#include <ithread.h>
 
 static const char kTransportService[] =
 	"urn:schemas-upnp-org:service:AVTransport:1";
@@ -203,7 +204,7 @@ void RendererState::DecodeMetaAndInsertData_Locked(const char *didl_xml) {
     if (strcmp("dc:title", name) == 0) {
       variables_["Meta_Title"] = value;
     } else if (strcmp("upnp:artist", name) == 0) {
-      const char *qualifier 
+      const char *qualifier
         = ixmlElement_getAttribute((IXML_Element*) it->nodeItem, "role");
       if (qualifier != NULL && strcmp(qualifier, "Composer") == 0) {
         variables_["Meta_Composer"] = value;
@@ -237,9 +238,9 @@ void RendererState::DecodeMetaAndInsertData_Locked(const char *didl_xml) {
   ixmlDocument_free(doc);
 }
 
-void RendererState::ReceiveEvent(const struct Upnp_Event *data) {
-  const char *as_string = find_first_content(data->ChangedVariables,
-                                             "LastChange");
+void RendererState::ReceiveEvent(const UpnpEvent *data) {
+    const char *as_string = find_first_content(
+        UpnpEvent_get_ChangedVariables(data), "LastChange");
   //fprintf(stderr, "Got variable changes: %s\n", as_string);
   IXML_Document *doc = ixmlParseBuffer(as_string);
   if (doc == NULL) {
@@ -255,7 +256,7 @@ void RendererState::ReceiveEvent(const struct Upnp_Event *data) {
   ithread_mutex_lock(&variable_mutex_);
   for (const IXML_NodeList *it = variable_list; it; it = it->next) {
     const char *name = ixmlNode_getNodeName(it->nodeItem);
-    const char *value 
+    const char *value
       = ixmlElement_getAttribute((IXML_Element*) it->nodeItem, "val");
     variables_[name] = value;
     if (strcmp(name, "CurrentTrackMetaData") == 0) {

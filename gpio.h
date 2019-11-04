@@ -1,3 +1,4 @@
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 #ifndef RPI_GPIO_H
 #define RPI_GPIO_H
 
@@ -36,9 +37,14 @@ class GPIO {
     ClearBits(~value & output_bits_);
   }
 
+  inline void busy_nano_sleep(long nanos) {
+    busy_wait_impl_(nanos);
+  }
+
  private:
   uint32_t output_bits_;
   volatile uint32_t *gpio_port_;
+  void (*busy_wait_impl_)(long);
 };
 
 #endif  // RPI_GPIO_H

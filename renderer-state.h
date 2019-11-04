@@ -1,4 +1,4 @@
-//  -*- c++ -*-
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 
-#include <upnp/upnp.h>
-#include <upnp/ixml.h>
-#include <upnp/ithread.h>
+#include <upnp.h>
+#include <ixml.h>
+#include <ithread.h>
 
 // Representing the state for a particular renderer.
 class RendererState {
@@ -55,7 +55,7 @@ public:
                    SubscriptionMap *subscription_map);
 
   // Callback from controller when changed variables arrive.
-  void ReceiveEvent(const struct Upnp_Event *data);
+  void ReceiveEvent(const UpnpEvent *data);
 
 private:
   bool Subscribe(UpnpClient_Handle upnp_controller,

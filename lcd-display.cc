@@ -1,4 +1,4 @@
-//  -*- c++ -*-
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -33,10 +33,14 @@ GPIO gpio;
 // According to datasheet, basic ops are typically ~37usec
 #define LCD_DISPLAY_OPERATION_WAIT_USEC 50
 
+// Time between sending two nibbles.
+#define LCD_ENABLE_PULSE_TIME_NSEC 400
+
+// The following GPIO mapping allows to have all wiring in one row to
+// accomodate simpling wiring.
 #define LCD_E (1<<18)
 #define LCD_RS (1<<14)
 
-// We have the bits assigned in an unusal pattern to accomodate simple wiring.
 #define LCD_D0_BIT (1<<23)
 #define LCD_D1_BIT (1<<24)
 #define LCD_D2_BIT (1<<25)
@@ -53,11 +57,7 @@ static void WriteNibble(bool is_command, uint8_t b) {
   // We don't want to do a sleep because we don't want to risk a context
   // switch - Linux might come back way to late (the LCD display times out
   // between two Nibble-writes and ends up in a broken state).
-  const int kNanoWait = 400;
-  for (int i = kNanoWait >> 2; i != 0; --i) {  // Empirically good on RPi 700Mhz
-    asm("");   // force GCC not to optimize this away.
-  }
-
+  gpio.busy_nano_sleep(LCD_ENABLE_PULSE_TIME_NSEC);
   gpio.ClearBits(LCD_E);
 }
 
@@ -93,7 +93,7 @@ static void RegisterFont(uint8_t num, const Font5x8 *font) {
 
 uint8_t LCDDisplay::FindCharacterFor(Codepoint cp, bool *register_new) {
   *register_new = false;
-  if (cp < 0x80) return cp;
+  if (cp < 0x80) return cp;   // Everything regular ASCII is used as-is.
 
   // Conceptually, we need a map codepoint -> char; but this is a really small
   // list, so this is faster to iterate than having a bulky map.

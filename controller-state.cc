@@ -1,4 +1,4 @@
-//  -*- c++ -*-
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -25,7 +25,7 @@
 #include "renderer-state.h"
 
 static const char kMediaRendererDevice[] =
-	"urn:schemas-upnp-org:device:MediaRenderer:1";
+  "urn:schemas-upnp-org:device:MediaRenderer:1";
 
 ControllerState::ControllerState(ControllerObserver *observer)
   : observer_(observer) {
@@ -35,20 +35,21 @@ ControllerState::ControllerState(ControllerObserver *observer)
   UpnpRegisterClient(&UpnpEventHandler, this, &device_);
 }
 
-void ControllerState::Register(const struct Upnp_Discovery *discovery) {
-  if (strcmp(discovery->DeviceType, kMediaRendererDevice) != 0) {
+void ControllerState::Register(const UpnpDiscovery *discovery) {
+  if (strcmp(UpnpDiscovery_get_DeviceType_cstr(discovery),
+             kMediaRendererDevice) != 0) {
     return;
   }
 
-  const std::string uuid = discovery->DeviceId;
+  const std::string uuid = UpnpDiscovery_get_DeviceID_cstr(discovery);
   RendererState *renderer = NULL;
 
   ithread_mutex_lock(&mutex_);
   renderer = uuid2render_[uuid];
   if (renderer == NULL) {
-    renderer = new RendererState(discovery->Location);
+    renderer = new RendererState(UpnpDiscovery_get_Location_cstr(discovery));
     uuid2render_[uuid] = renderer;
-    if (renderer->InitDescription(discovery->Location)) {
+    if (renderer->InitDescription(UpnpDiscovery_get_Location_cstr(discovery))) {
       renderer->SubscribeTo(device_, &subscription2render_);
     }
     observer_->AddRenderer(uuid, renderer);
@@ -56,9 +57,9 @@ void ControllerState::Register(const struct Upnp_Discovery *discovery) {
   ithread_mutex_unlock(&mutex_);
 }
 
-void ControllerState::Unregister(const struct Upnp_Discovery *discovery) {
-  const std::string uuid = discovery->DeviceId;
-  
+void ControllerState::Unregister(const UpnpDiscovery *discovery) {
+  const std::string uuid = UpnpDiscovery_get_DeviceID_cstr(discovery);
+
   ithread_mutex_lock(&mutex_);
   RenderMap::iterator found = uuid2render_.find(uuid);
   if (found != uuid2render_.end()) {
@@ -69,30 +70,32 @@ void ControllerState::Unregister(const struct Upnp_Discovery *discovery) {
   ithread_mutex_unlock(&mutex_);
 }
 
-void ControllerState::ReceiveEvent(const struct Upnp_Event *data) {
+void ControllerState::ReceiveEvent(const UpnpEvent *data) {
+  const std::string sid = UpnpEvent_get_SID_cstr(data);
   ithread_mutex_lock(&mutex_);
-  RenderMap::iterator found = subscription2render_.find(data->Sid);
+  RenderMap::iterator found = subscription2render_.find(sid);
   if (found != subscription2render_.end()) {
     found->second->ReceiveEvent(data);
   }
   ithread_mutex_unlock(&mutex_);
 }
 
-int ControllerState::UpnpEventHandler(Upnp_EventType event, void *event_data,
+int ControllerState::UpnpEventHandler(Upnp_EventType_e event,
+                                      const void *event_data,
                                       void *userdata) {
   ControllerState *state = static_cast<ControllerState*>(userdata);
   switch (event) {
   case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
-    state->Register(static_cast<Upnp_Discovery*>(event_data));
+    state->Register(static_cast<const UpnpDiscovery*>(event_data));
     break;
 
   case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE:
   case UPNP_EVENT_AUTORENEWAL_FAILED:
-    state->Unregister(static_cast<Upnp_Discovery*>(event_data));
+    state->Unregister(static_cast<const UpnpDiscovery*>(event_data));
     break;
 
   case UPNP_EVENT_RECEIVED:
-    state->ReceiveEvent(static_cast<Upnp_Event*>(event_data));
+    state->ReceiveEvent(static_cast<const UpnpEvent*>(event_data));
     break;
 
   default:
@@ -101,4 +104,3 @@ int ControllerState::UpnpEventHandler(Upnp_EventType event, void *event_data,
   }
   return UPNP_E_SUCCESS;
 }
-

@@ -15,9 +15,11 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <unistd.h>
+#include <limits.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "controller-state.h"
 #include "upnp-display.h"
@@ -82,10 +84,23 @@ int main(int argc, char *argv[]) {
               "console instead).\n");
       return 1;
     }
+
+    // The LCDs have timeouts when certain write operations take too long,
+    // so make sure we tell the kernel we're serious about timing.
+    struct sched_param p;
+    p.sched_priority = 99;
+    if (sched_setscheduler(0, SCHED_FIFO, &p) < 0) {
+        fprintf(stderr,
+                "Couldn't set realtime priority which we need to make sure "
+                "hardware timing is correct .\nConsider running as root or "
+                "granting CAP_SYS_NICE capability "
+                "(sudo setcap cap_sys_nice=eip <program>).\n");
+    }
+
     printer = display;
   }
 
-  // TODO: drop priviliges (GPIO is set up at this point).
+  // TODO: if running as root: drop priviliges now.
 
   if (as_daemon) {
     daemon(0, 0);
