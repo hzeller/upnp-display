@@ -70,7 +70,7 @@ static void WriteByte(bool is_command, uint8_t b) {
 }
 
 // Find font for codepoint from our sorted compiled-in table.
-const static Font5x8 *findFont(const uint32_t codepoint) {
+const static Font5x8 *findGlyph(const uint32_t codepoint) {
   int lo = 0, hi = kFontDataSize;
   int pos;
   for (pos = (hi + lo) / 2; hi > lo; pos = (hi + lo) / 2) {
@@ -82,12 +82,12 @@ const static Font5x8 *findFont(const uint32_t codepoint) {
   return (kFontData[pos].codepoint == codepoint) ? &kFontData[pos] : NULL;
 }
 
-static void RegisterFont(uint8_t num, const Font5x8 *font) {
-  assert(font);
+static void LCDStoreGlyph(uint8_t num, const Font5x8 *glyph) {
+  assert(glyph);
   assert(num < 8);
   WriteByte(true, 0x40 + (num << 3));
   for (int i = 0; i < 8; ++i) {
-    WriteByte(false, font->bitmap[i] >> 3);  // font is left aligned in data.
+    WriteByte(false, glyph->bitmap[i] >> 3);  // font is left aligned in data.
   }
 }
 
@@ -105,11 +105,11 @@ uint8_t LCDDisplay::FindCharacterFor(Codepoint cp, bool *register_new) {
   // round-robin approach here, potentially re-using characters that are
   // still in use. For now, we just assume that the active number of different
   // characters is small enough to fit.
-  const Font5x8 *font = findFont(cp);
-  if (font == NULL) return '?';  // unicode without font.
+  const Font5x8 *glyph = findGlyph(cp);
+  if (glyph == NULL) return '?';  // unicode without glyph for codepoint.
 
   const uint8_t new_char = (next_free_special_++ % 8);
-  RegisterFont(new_char, font);
+  LCDStoreGlyph(new_char, glyph);
   *register_new = true;
   special_characters_[new_char] = cp;
   return new_char;
