@@ -63,7 +63,8 @@ static const char *find_first_content(IXML_Document *doc, const char *name) {
 }
 
 RendererState::RendererState(const char *uuid)
-  : uuid_(uuid), descriptor_(NULL), subscriptions_(NULL) {
+  : uuid_(uuid), descriptor_(NULL), subscriptions_(NULL),
+    last_event_update_(time(NULL)) {
   ithread_mutex_init(&variable_mutex_, NULL);
 }
 
@@ -170,6 +171,13 @@ std::string RendererState::GetVar(const std::string &name) const {
   return result;
 }
 
+time_t RendererState::last_event_update() const {
+  ithread_mutex_lock(&variable_mutex_);
+  time_t result = last_event_update_;
+  ithread_mutex_unlock(&variable_mutex_);
+  return result;
+}
+
 void RendererState::DecodeMetaAndInsertData_Locked(const char *didl_xml) {
   variables_["Meta_Title"] = "";
   variables_["Meta_Artist"] = "";
@@ -263,6 +271,7 @@ void RendererState::ReceiveEvent(const UpnpEvent *data) {
       DecodeMetaAndInsertData_Locked(value);
     }
   }
+  last_event_update_ = time(NULL);
   ithread_mutex_unlock(&variable_mutex_);
   ixmlNodeList_free(variable_list);
   ixmlDocument_free(doc);

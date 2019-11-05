@@ -124,6 +124,16 @@ in the same network, so you can have one display in every room :)
 
 ![yay, working][in-operation]
 
+#### Synopsis
+```
+Usage: ./upnp-display <options>
+        -n <name or "uuid:"<uuid>: Connect to this renderer.
+        -w <display-width>       : Set display width.
+        -d                       : Run as daemon.
+        -c                       : On console instead LCD (debug).
+        -s <timeout-seconds>     : Screensave after this time.
+```
+
 ### Compatibility
 
 #### UPnP Renderers

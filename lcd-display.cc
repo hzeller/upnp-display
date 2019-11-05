@@ -150,8 +150,17 @@ bool LCDDisplay::Init() {
   usleep(2000);           // ... which takes up to 1.6ms
 
   initialized_ = true;
+  display_is_on_ = true;
 
   return true;
+}
+
+void LCDDisplay::SaveScreen() {
+  if (!display_is_on_) return;
+  Print(0, "");
+  Print(1, "");
+  WriteByte(true, 0x08);
+  display_is_on_ = false;
 }
 
 void LCDDisplay::Print(int row, const std::string &text) {
@@ -160,6 +169,11 @@ void LCDDisplay::Print(int row, const std::string &text) {
 
   if (last_line_[row] == text)
     return;  // nothing to update.
+
+  if (!display_is_on_) {
+    WriteByte(true, 0x0c);
+    display_is_on_ = true;
+  }
 
   // Set address to write to; line 2 starts at 0x40
   WriteByte(true, 0x80 + ((row > 0) ? 0x40 : 0));

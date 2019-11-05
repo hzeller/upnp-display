@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <ithread.h>
 
@@ -51,9 +52,11 @@ static void SigReceiver(int) {
 #define PLAY_SYMBOL "\u25b6"   // ▶
 #define PAUSE_SYMBOL "]["      // TODO: add symbol in private unicode range.
 
-UPnPDisplay::UPnPDisplay(const std::string &friendly_name, Printer *printer)
+UPnPDisplay::UPnPDisplay(const std::string &friendly_name, Printer *printer,
+                         int screensave_timeout)
   : player_match_name_(friendly_name),
-    printer_(printer), current_state_(NULL) {
+    printer_(printer), screensave_timeout_(screensave_timeout),
+    current_state_(NULL) {
   ithread_mutex_init(&mutex_, NULL);
   signal(SIGTERM, &SigReceiver);
   signal(SIGINT, &SigReceiver);
@@ -64,7 +67,8 @@ void UPnPDisplay::Loop() {
   std::string title, composer, artist, album;
   std::string play_state = "STOPPED";
   std::string volume, previous_volume;
-  int time = 0;
+  time_t last_update = 0;
+  int track_time = 0;
 
   Scroller first_line_scroller("  -  ");
   Scroller second_line_scroller("  -  ");
@@ -74,7 +78,8 @@ void UPnPDisplay::Loop() {
   signal_received = false;
   while (!signal_received) {
     usleep(kDisplayUpdateMillis * 1000);
-
+    const time_t now = time(NULL);
+    last_update = 0;
     bool renderer_available = false;
     ithread_mutex_lock(&mutex_);
     if (current_state_ != NULL) {
@@ -92,10 +97,17 @@ void UPnPDisplay::Loop() {
       // Relative time pos is not evented. TODO: query actively.
       //time = parseTime(current_state_->GetVar("RelativeTimePosition"));
       // for now, we just show the duration.
-      time = parseTime(current_state_->GetVar("CurrentTrackDuration"));
+      track_time = parseTime(current_state_->GetVar("CurrentTrackDuration"));
       volume = current_state_->GetVar("Volume");
+      last_update = current_state_->last_event_update();
     }
     ithread_mutex_unlock(&mutex_);
+
+    if (screensave_timeout_ > 0 && last_update > 0 &&
+        (now - last_update) > screensave_timeout_) {
+      printer_->SaveScreen();
+      continue;
+    }
 
     if (!renderer_available) {
       printer_->Print(0, "Waiting for");
@@ -160,7 +172,7 @@ void UPnPDisplay::Loop() {
     if (play_state == "STOPPED") {
       formatted_time = "  " STOP_SYMBOL " ";
     } else {
-      formatted_time = formatTime(time);
+      formatted_time = formatTime(track_time);
       // 'Blinking' time when paused.
       if (play_state == "PAUSED_PLAYBACK" && blink_time % 2 == 0) {
         formatted_time = std::string(formatted_time.size(), ' ');

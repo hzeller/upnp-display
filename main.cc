@@ -1,3 +1,4 @@
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -35,8 +36,9 @@ int main(int argc, char *argv[]) {
   int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
   bool as_daemon = false;
   bool on_console = false;
+  int screensave_after = -1;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:dc")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:w:dcs:")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
@@ -60,6 +62,10 @@ int main(int argc, char *argv[]) {
       break;
     }
 
+    case 's':
+      screensave_after = atoi(optarg);
+      break;
+
     case 'h':
     default:
       fprintf(stderr, "Usage: %s <options>\n", argv[0]);
@@ -68,6 +74,7 @@ int main(int argc, char *argv[]) {
               "\t-w <display-width>       : Set display width.\n"
               "\t-d                       : Run as daemon.\n"
               "\t-c                       : On console instead LCD (debug).\n"
+              "\t-s <timeout-seconds>     : Screensave after this time.\n"
               );
       return 1;
     }
@@ -106,7 +113,7 @@ int main(int argc, char *argv[]) {
     daemon(0, 0);
   }
 
-  UPnPDisplay ui(match_name, printer);
+  UPnPDisplay ui(match_name, printer, screensave_after);
   ControllerState controller(&ui, printer);
   ui.Loop();
 

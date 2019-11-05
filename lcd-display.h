@@ -1,4 +1,4 @@
-//  -*- c++ -*-
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -37,6 +37,8 @@ public:
   // Print text in given line.
   virtual void Print(int line, const std::string &text);
 
+  virtual void SaveScreen();
+
 private:
   typedef uint32_t Codepoint;
 
@@ -44,6 +46,7 @@ private:
 
   const int width_;
   bool initialized_;
+  bool display_is_on_;
   std::string last_line_[2];
 
   Codepoint special_characters_[8];  // cgram -> codepoint

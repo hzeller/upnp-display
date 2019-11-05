@@ -22,9 +22,10 @@
 #include <string>
 #include <vector>
 
-#include <upnp.h>
-#include <ixml.h>
 #include <ithread.h>
+#include <ixml.h>
+#include <time.h>
+#include <upnp.h>
 
 // Representing the state for a particular renderer.
 class RendererState {
@@ -41,6 +42,8 @@ public:
   // Get variable with given name. Text is encoded in UTF-8.
   // Thread safe.
   std::string GetVar(const std::string &name) const;
+
+  time_t last_event_update() const;
 
   // -- method calls used for internal upnp subscription management.
 
@@ -77,6 +80,7 @@ private:
 
   mutable ithread_mutex_t variable_mutex_;
   typedef std::map<std::string, std::string> VariableMap;
+  time_t last_event_update_;
   VariableMap variables_;
 };
 #endif // RENDERER_STATE_H

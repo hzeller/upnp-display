@@ -30,7 +30,8 @@ public:
   // Creates upnp display that waits for a renderer with the given
   // registered name (if empty string, waits for the first available).
   // Outputs to "printer".
-  UPnPDisplay(const std::string &renderer_registered_name, Printer *printer);
+  UPnPDisplay(const std::string &renderer_registered_name, Printer *printer,
+              int screensave_timeout);
 
   // Main Loop. Only exits on catching SIGTERM or SIGINT (Ctrl-c)
   void Loop();
@@ -56,6 +57,7 @@ private:
 
   const std::string player_match_name_;
   Printer *const printer_;
+  const int screensave_timeout_;
   ithread_mutex_t mutex_;
 
   std::string uuid_;

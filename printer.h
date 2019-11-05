@@ -1,4 +1,4 @@
-//  -*- c++ -*-
+// -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 //  This file is part of UPnP LCD Display
 //
 //  Copyright (C) 2013 Henner Zeller <h.zeller@acm.org>
@@ -30,6 +30,9 @@ public:
   // Print line. The text is given in UTF-8, the printer has to attempt
   // to try its best to display it.
   virtual void Print(int line, const std::string &text) = 0;
+
+  // Put screen in sleep mode if possible.
+  virtual void SaveScreen() = 0;
 };
 
 // Very simple implementation of the above, mostly for debugging. Just prints
@@ -39,6 +42,7 @@ public:
   explicit ConsolePrinter(int width) : width_(width) {}
   virtual int width() const { return width_; }
   virtual void Print(int line, const std::string &text);
+  virtual void SaveScreen() {}
 
 private:
   const int width_;
