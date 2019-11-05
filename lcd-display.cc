@@ -126,6 +126,8 @@ bool LCDDisplay::Init() {
 
   gpio.InitOutputs(LCD_E | LCD_RS |
                    LCD_D0_BIT | LCD_D1_BIT | LCD_D2_BIT | LCD_D3_BIT);
+  gpio.Write(0);
+  usleep(100000);
 
   // -- This seems to be a reliable initialization sequence:
 
