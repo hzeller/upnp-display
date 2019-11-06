@@ -165,22 +165,35 @@ Here you see an example that uses the non-ASCII characters
 (If there is enough demand, I can separate out the unicode-aware display writing
 into a separate libray).
 
+#### Other machines than Raspberry Pi
+If you want to connect the display to some other computer
+than the Paspberry Pi, GPIO pins will be accessed differently.
+You have to change the hardware interfacing and modify lcd-display.cc
+
 #### LCD Displays
 Most displays you can get are HD44780 compatible; There are as well
 24x2 and 40x2 displays available (also pretty cheap). I found that 16
-characters is a bit on the low side to display a useful amount without constant
-scrolling. If you get another display, use the `-w` option to choose your
-width. Even if the pin-out looks a bit different (2 rows with 7 or 8
+characters are a bit on the small side to display a useful amount without
+scrolling constantly. If you get another display, use the `-w` option to choose
+your width. Even if the pin-out looks a bit different (2 rows with 7 or 8
 lines), they typically have the same data lines on the same pin numbers - check
 your data sheet.
 
 Here a 40 character display from ebay (DMC-50037N)
 ![40 character display][display-40-char]
 
-#### Other machines than Raspberry Pi
-If you want to connect the display on some other computer
-than the Paspberry Pi, you don't have GPIO pins. You have to change the hardware
-interfacing and modify lcd-display.cc
+Newer Rasbperry Pi's, like this Raspberry Pi Zero W, are small enough to be
+mounted hidden behind the display and connecting wirelessly; here behind this
+gorgeous CU40025SCPB Noritake VFD:
+
+Front in 3D printed case           | Back With Pi Zero W
+-----------------------------------|-------------------------
+![VFD front](images/vfd-front.jpg) | ![VFD back](images/vfd-back.jpg)
+
+I am using this in this detached display built, mounted on a microphone
+gooseneck on an old Ikea lamp foot.
+
+![CU40025SCPB VFD action shot](images/vfd-action-shot.jpg)
 
 [parts]: ./images/basic-connector-small.jpg
 [soldered]: ./images/soldered-small.jpg
