@@ -69,17 +69,14 @@ static void WriteByte(bool is_command, uint8_t b) {
   usleep(LCD_DISPLAY_OPERATION_WAIT_USEC);
 }
 
+static int compare_glyph(const void *key, const void *array_member) {
+  return *((const uint32_t*)key) - ((const Font5x8*)array_member)->codepoint;
+}
+
 // Find font for codepoint from our sorted compiled-in table.
-const static Font5x8 *findGlyph(const uint32_t codepoint) {
-  int lo = 0, hi = kFontDataSize;
-  int pos;
-  for (pos = (hi + lo) / 2; hi > lo; pos = (hi + lo) / 2) {
-    if (codepoint > kFontData[pos].codepoint)
-      lo = pos + 1;
-    else
-      hi = pos;
-  }
-  return (kFontData[pos].codepoint == codepoint) ? &kFontData[pos] : NULL;
+static const Font5x8 *findGlyph(const uint32_t codepoint) {
+  return (const Font5x8*)bsearch(&codepoint, kFontData, kFontDataSize,
+                                 sizeof(Font5x8), compare_glyph);
 }
 
 static void LCDStoreGlyph(uint8_t num, const Font5x8 *glyph) {
