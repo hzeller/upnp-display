@@ -58,12 +58,16 @@ uint32_t utf8_next_codepoint(byte_iterator &it) {
 }
 
 template <typename byte_iterator>
-size_t utf8_character_count(const byte_iterator &begin,
-                            const byte_iterator &end) {
-  size_t result = 0;
+int utf8_character_count(const byte_iterator &begin,
+                         const byte_iterator &end) {
+  int result = 0;
   for (byte_iterator it = begin; it != end; utf8_next_codepoint(it)) {
     ++result;
   }
   return result;
+}
+
+inline int utf8_len(const std::string& str) {
+    return utf8_character_count(str.begin(), str.end());
 }
 #endif  // UPNP_DISPLAY_UTF8_H

@@ -178,16 +178,27 @@ void UPnPDisplay::Loop() {
         formatted_time = std::string(formatted_time.size(), ' ');
       }
     }
+    const int remaining_len = printer_->width() - formatted_time.length() - 1;
 
-    // Assemble second line from album and artist.
+    // Assemble second line from album. Add artist, but only if we wouldn't
+    // exceed length (or, if we already exceed length, also append).
     print_line = album;
+
+    std::string artist_addition;
     if (!artist.empty() && artist != album) {
-      if (!print_line.empty()) print_line.append("/");
-      print_line.append(artist);
+      if (!print_line.empty()) artist_addition.append("/");
+      artist_addition.append(artist);
+    }
+    // Only append it if we'd stay within allocated screen-width. Unless the
+    // Album name is already so long that we'd exceed the length anyway. In
+    // that case, we have to scroll no matter what and including the artist
+    // does less harm.
+    if (utf8_len(print_line + artist_addition) <= remaining_len
+        || utf8_len(print_line) > remaining_len) {
+      print_line += artist_addition;
     }
 
     // Show album/artist right aligned in space next to time. Or scroll if long.
-    const int remaining_len = printer_->width() - formatted_time.length() - 1;
     RightAlign(&print_line, remaining_len);
     second_line_scroller.SetValue(print_line, remaining_len);
     printer_->Print(1, formatted_time + " "
@@ -258,14 +269,14 @@ std::string UPnPDisplay::formatTime(int time) {
 }
 
 void UPnPDisplay::CenterAlign(std::string *to_print, int width) {
-  const int len = utf8_character_count(to_print->begin(), to_print->end());
+  const int len = utf8_len(*to_print);
   if (len < width) {
     to_print->insert(0, std::string((width - len) / 2, ' '));
   }
 }
 
 void UPnPDisplay::RightAlign(std::string *to_print, int width) {
-  const int len = utf8_character_count(to_print->begin(), to_print->end());
+  const int len = utf8_len(*to_print);
   if (len < width) {
     to_print->insert(0, std::string(width - len, ' '));
   }
