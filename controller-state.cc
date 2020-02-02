@@ -27,8 +27,9 @@
 
 #include <upnptools.h>
 
-static const char kMediaRendererDevice[] =
-  "urn:schemas-upnp-org:device:MediaRenderer:1";
+// Prefix, as they can be followed by version number.
+static const char kMediaRendererDevicePrefix[] =
+  "urn:schemas-upnp-org:device:MediaRenderer:";
 
 ControllerState::ControllerState(ControllerObserver *observer,
                                  Printer *printer)
@@ -55,9 +56,12 @@ ControllerState::ControllerState(ControllerObserver *observer,
   UpnpRegisterClient(&UpnpEventHandler, this, &device_);
 }
 
+static bool prefixMatch(const char *str, const char *prefix) {
+  return strncmp(str, prefix, strlen(prefix)) == 0;
+}
 void ControllerState::Register(const UpnpDiscovery *discovery) {
-  if (strcmp(UpnpDiscovery_get_DeviceType_cstr(discovery),
-             kMediaRendererDevice) != 0) {
+  if (!prefixMatch(UpnpDiscovery_get_DeviceType_cstr(discovery),
+                   kMediaRendererDevicePrefix)) {
     return;
   }
 

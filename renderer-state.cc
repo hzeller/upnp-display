@@ -26,10 +26,11 @@
 #include <upnptools.h>
 #include <ithread.h>
 
-static const char kTransportService[] =
-	"urn:schemas-upnp-org:service:AVTransport:1";
-static const char kRenderControl[] =
-	"urn:schemas-upnp-org:service:RenderingControl:1";
+// Prefix, as these can be followed by changing version number.
+static const char kTransportServicePrefix[] =
+	"urn:schemas-upnp-org:service:AVTransport:";
+static const char kRenderControlPrefix[] =
+	"urn:schemas-upnp-org:service:RenderingControl:";
 
 static const char *get_node_content(IXML_Node *node) {
   IXML_Node *text_content = ixmlNode_getFirstChild(node);
@@ -101,6 +102,9 @@ bool RendererState::InitDescription(const char *description_url) {
   return true;
 }
 
+static bool prefixMatch(const char *str, const char *prefix) {
+  return strncmp(str, prefix, strlen(prefix)) == 0;
+}
 bool RendererState::SubscribeTo(UpnpClient_Handle upnp_controller,
                                 SubscriptionMap *submap) {
   assert(descriptor_ != NULL);    // Needs to be initialized
@@ -131,8 +135,8 @@ bool RendererState::SubscribeTo(UpnpClient_Handle upnp_controller,
     if (service_type == NULL) continue;
     const char *event_url = find_first_content(it->nodeItem, "eventSubURL");
 
-    if ((strcmp(service_type, kTransportService) == 0)
-        || (strcmp(service_type, kRenderControl) == 0)) {
+    if (prefixMatch(service_type, kTransportServicePrefix) ||
+        prefixMatch(service_type, kRenderControlPrefix)) {
       success &= Subscribe(upnp_controller, service_type, event_url);
     }
   }
