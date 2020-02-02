@@ -81,6 +81,7 @@ void UPnPDisplay::Loop() {
     const time_t now = time(NULL);
     last_update = 0;
     bool renderer_available = false;
+    bool muted = false;
     ithread_mutex_lock(&mutex_);
     if (current_state_ != NULL) {
       renderer_available = true;
@@ -99,6 +100,7 @@ void UPnPDisplay::Loop() {
       // for now, we just show the duration.
       track_time = parseTime(current_state_->GetVar("CurrentTrackDuration"));
       volume = current_state_->GetVar("Volume");
+      muted = current_state_->GetVar("Mute") == "1";
       last_update = current_state_->last_event_update();
     }
     ithread_mutex_unlock(&mutex_);
@@ -132,8 +134,16 @@ void UPnPDisplay::Loop() {
       printer_->Print(0, print_line);
     }
 
-    // Second line: if there is a volume change, display it for kVolumeFlashTime
-    if (volume != previous_volume || volume_countdown > 0) {
+    // Second line: Show volume related things if relevant.
+    // Either we're muted, or there was a volume change that we display
+    // for kVolumeFlashTime
+    if (muted) {
+      print_line = "[Muted]";
+      CenterAlign(&print_line, printer_->width());
+      printer_->Print(1, print_line);
+      continue;
+    }
+    else if (volume != previous_volume || volume_countdown > 0) {
       if (!previous_volume.empty()) {
         if (volume != previous_volume) {
           volume_countdown = kVolumeFlashTime;
