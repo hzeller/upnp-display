@@ -36,9 +36,9 @@ ControllerState::ControllerState(ControllerObserver *observer,
   : observer_(observer) {
   assert(observer != NULL);  // without, it wouldn't make much sense.
   ithread_mutex_init(&mutex_, NULL);
-  // If network is not up yet, UpnpInit() fails. Retry.
+  // If network is not up yet, UpnpInit2() fails. Retry.
   // This can happen if system just booted and DHCP is not settled yet.
-  int rc = UpnpInit(NULL, 0);
+  int rc = UpnpInit2(NULL, 0);
   int retries_left = 60;
   static const int kRetryTimeMs = 1000;
   while (rc != UPNP_E_SUCCESS && retries_left--) {
@@ -46,12 +46,12 @@ ControllerState::ControllerState(ControllerObserver *observer,
     char buffer[40];
     snprintf(buffer, sizeof(buffer), "Network...%d", retries_left);
     printer->Print(0, buffer);
-    fprintf(stderr, "UpnpInit() Error: %s (%d). Retrying...(%ds)",
+    fprintf(stderr, "UpnpInit2() Error: %s (%d). Retrying...(%ds)",
             UpnpGetErrorMessage(rc), rc, retries_left);
-    rc = UpnpInit(NULL, 0);
+    rc = UpnpInit2(NULL, 0);
   }
   if (rc != UPNP_E_SUCCESS) {
-    fprintf(stderr, "UpnpInit() Error: %s (%d).", UpnpGetErrorMessage(rc), rc);
+    fprintf(stderr, "UpnpInit2() Error: %s (%d).", UpnpGetErrorMessage(rc), rc);
   }
   UpnpRegisterClient(&UpnpEventHandler, this, &device_);
 }
