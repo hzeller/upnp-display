@@ -35,7 +35,7 @@ ControllerState::ControllerState(ControllerObserver *observer,
                                  Printer *printer)
   : observer_(observer) {
   assert(observer != NULL);  // without, it wouldn't make much sense.
-  ithread_mutex_init(&mutex_, NULL);
+  pthread_mutex_init(&mutex_, NULL);
   // If network is not up yet, UpnpInit2() fails. Retry.
   // This can happen if system just booted and DHCP is not settled yet.
   int rc = UpnpInit2(NULL, 0);
@@ -68,7 +68,7 @@ void ControllerState::Register(const UpnpDiscovery *discovery) {
   const std::string uuid = UpnpDiscovery_get_DeviceID_cstr(discovery);
   RendererState *renderer = NULL;
 
-  ithread_mutex_lock(&mutex_);
+  pthread_mutex_lock(&mutex_);
   renderer = uuid2render_[uuid];
   if (renderer == NULL) {
     renderer = new RendererState(UpnpDiscovery_get_Location_cstr(discovery));
@@ -78,30 +78,30 @@ void ControllerState::Register(const UpnpDiscovery *discovery) {
     }
     observer_->AddRenderer(uuid, renderer);
   }
-  ithread_mutex_unlock(&mutex_);
+  pthread_mutex_unlock(&mutex_);
 }
 
 void ControllerState::Unregister(const UpnpDiscovery *discovery) {
   const std::string uuid = UpnpDiscovery_get_DeviceID_cstr(discovery);
 
-  ithread_mutex_lock(&mutex_);
+  pthread_mutex_lock(&mutex_);
   RenderMap::iterator found = uuid2render_.find(uuid);
   if (found != uuid2render_.end()) {
     observer_->RemoveRenderer(uuid);
     delete found->second;
     uuid2render_.erase(uuid);
   }
-  ithread_mutex_unlock(&mutex_);
+  pthread_mutex_unlock(&mutex_);
 }
 
 void ControllerState::ReceiveEvent(const UpnpEvent *data) {
   const std::string sid = UpnpEvent_get_SID_cstr(data);
-  ithread_mutex_lock(&mutex_);
+  pthread_mutex_lock(&mutex_);
   RenderMap::iterator found = subscription2render_.find(sid);
   if (found != subscription2render_.end()) {
     found->second->ReceiveEvent(data);
   }
-  ithread_mutex_unlock(&mutex_);
+  pthread_mutex_unlock(&mutex_);
 }
 
 int ControllerState::UpnpEventHandler(Upnp_EventType_e event,

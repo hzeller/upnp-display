@@ -1,0 +1,4 @@
+*.o
+.envrc
+font-data.c
+upnp-display

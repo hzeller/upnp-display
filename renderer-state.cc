@@ -24,7 +24,7 @@
 
 #include <upnp.h>
 #include <upnptools.h>
-#include <ithread.h>
+#include <pthread.h>
 
 // Prefix, as these can be followed by changing version number.
 static const char kTransportServicePrefix[] =
@@ -66,7 +66,7 @@ static const char *find_first_content(IXML_Document *doc, const char *name) {
 RendererState::RendererState(const char *uuid)
   : uuid_(uuid), descriptor_(NULL), subscriptions_(NULL),
     last_event_update_(time(NULL)) {
-  ithread_mutex_init(&variable_mutex_, NULL);
+  pthread_mutex_init(&variable_mutex_, NULL);
 }
 
 RendererState::~RendererState() {
@@ -166,19 +166,19 @@ bool RendererState::Subscribe(UpnpClient_Handle upnp_controller,
 
 std::string RendererState::GetVar(const std::string &name) const {
   std::string result;
-  ithread_mutex_lock(&variable_mutex_);
+  pthread_mutex_lock(&variable_mutex_);
   VariableMap::const_iterator found = variables_.find(name);
   if (found != variables_.end()) {
     result = found->second;
   }
-  ithread_mutex_unlock(&variable_mutex_);
+  pthread_mutex_unlock(&variable_mutex_);
   return result;
 }
 
 time_t RendererState::last_event_update() const {
-  ithread_mutex_lock(&variable_mutex_);
+  pthread_mutex_lock(&variable_mutex_);
   time_t result = last_event_update_;
-  ithread_mutex_unlock(&variable_mutex_);
+  pthread_mutex_unlock(&variable_mutex_);
   return result;
 }
 
@@ -265,7 +265,7 @@ void RendererState::ReceiveEvent(const UpnpEvent *data) {
   IXML_Node *instance_element = instance_list->nodeItem;  // interested in 1st
   ixmlNodeList_free(instance_list);
   IXML_NodeList *variable_list = ixmlNode_getChildNodes(instance_element);
-  ithread_mutex_lock(&variable_mutex_);
+  pthread_mutex_lock(&variable_mutex_);
   for (const IXML_NodeList *it = variable_list; it; it = it->next) {
     const char *name = ixmlNode_getNodeName(it->nodeItem);
     const char *value
@@ -276,7 +276,7 @@ void RendererState::ReceiveEvent(const UpnpEvent *data) {
     }
   }
   last_event_update_ = time(NULL);
-  ithread_mutex_unlock(&variable_mutex_);
+  pthread_mutex_unlock(&variable_mutex_);
   ixmlNodeList_free(variable_list);
   ixmlDocument_free(doc);
 }

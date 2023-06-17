@@ -21,7 +21,7 @@
 #include <string>
 
 #include "observer.h"
-#include <ithread.h>
+#include <pthread.h>
 
 class Printer;
 
@@ -58,7 +58,7 @@ private:
   const std::string player_match_name_;
   Printer *const printer_;
   const int screensave_timeout_;
-  ithread_mutex_t mutex_;
+  pthread_mutex_t mutex_;
 
   std::string uuid_;
   const RendererState *current_state_;

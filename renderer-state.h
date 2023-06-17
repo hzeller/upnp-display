@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include <ithread.h>
+#include <pthread.h>
 #include <ixml.h>
 #include <time.h>
 #include <upnp.h>
@@ -78,7 +78,7 @@ private:
 
   std::vector<std::string> subscription_ids_;
 
-  mutable ithread_mutex_t variable_mutex_;
+  mutable pthread_mutex_t variable_mutex_;
   typedef std::map<std::string, std::string> VariableMap;
   time_t last_event_update_;
   VariableMap variables_;

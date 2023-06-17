@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <ithread.h>
+#include <pthread.h>
 
 #include "printer.h"
 #include "renderer-state.h"
@@ -57,7 +57,7 @@ UPnPDisplay::UPnPDisplay(const std::string &friendly_name, Printer *printer,
   : player_match_name_(friendly_name),
     printer_(printer), screensave_timeout_(screensave_timeout),
     current_state_(NULL) {
-  ithread_mutex_init(&mutex_, NULL);
+  pthread_mutex_init(&mutex_, NULL);
   signal(SIGTERM, &SigReceiver);
   signal(SIGINT, &SigReceiver);
 }
@@ -82,7 +82,7 @@ void UPnPDisplay::Loop() {
     last_update = 0;
     bool renderer_available = false;
     bool muted = false;
-    ithread_mutex_lock(&mutex_);
+    pthread_mutex_lock(&mutex_);
     if (current_state_ != NULL) {
       renderer_available = true;
       player_name = current_state_->friendly_name();
@@ -103,7 +103,7 @@ void UPnPDisplay::Loop() {
       muted = current_state_->GetVar("Mute") == "1";
       last_update = current_state_->last_event_update();
     }
-    ithread_mutex_unlock(&mutex_);
+    pthread_mutex_unlock(&mutex_);
 
     if (screensave_timeout_ > 0 && last_update > 0 &&
         (now - last_update) > screensave_timeout_) {
@@ -232,7 +232,7 @@ void UPnPDisplay::AddRenderer(const std::string &uuid,
                               const RendererState *state) {
   printf("%s: connected (uuid=%s)\n",            // not to LCD, different thread
          state->friendly_name().c_str(), uuid.c_str());
-  ithread_mutex_lock(&mutex_);
+  pthread_mutex_lock(&mutex_);
   if (current_state_ == NULL
       && (player_match_name_.empty()
           || player_match_name_ == uuid
@@ -240,16 +240,16 @@ void UPnPDisplay::AddRenderer(const std::string &uuid,
     uuid_ = uuid;
     current_state_ = state;
   }
-  ithread_mutex_unlock(&mutex_);
+  pthread_mutex_unlock(&mutex_);
 }
 
 void UPnPDisplay::RemoveRenderer(const std::string &uuid) {
   printf("disconnect (uuid=%s)\n", uuid.c_str()); // not to LCD, different thread
-  ithread_mutex_lock(&mutex_);
+  pthread_mutex_lock(&mutex_);
   if (current_state_ != NULL && uuid == uuid_) {
     current_state_ = NULL;
   }
-  ithread_mutex_unlock(&mutex_);
+  pthread_mutex_unlock(&mutex_);
 }
 
 int UPnPDisplay::parseTime(const std::string &upnp_time) {

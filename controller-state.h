@@ -19,7 +19,7 @@
 #define UPNP_DISPLAY_CONTROLLER_STATE_
 
 #include <upnp.h>
-#include <upnp/ithread.h>
+#include <pthread.h>
 
 #include <string>
 #include <map>
@@ -45,7 +45,7 @@ private:
   ControllerObserver *const observer_;
 
   UpnpClient_Handle device_;
-  ithread_mutex_t mutex_;
+  pthread_mutex_t mutex_;
   typedef std::map<std::string, RendererState *> RenderMap;
   RenderMap uuid2render_;
   RenderMap subscription2render_;

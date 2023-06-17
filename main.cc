@@ -110,7 +110,9 @@ int main(int argc, char *argv[]) {
   // TODO: if running as root: drop priviliges now.
 
   if (as_daemon) {
-    daemon(0, 0);
+    if (daemon(0, 0) != 0) {
+      perror("Failed to become daemon");
+    }
   }
 
   UPnPDisplay ui(match_name, printer, screensave_after);
