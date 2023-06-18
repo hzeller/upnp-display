@@ -53,9 +53,10 @@ static void SigReceiver(int) {
 #define PAUSE_SYMBOL "]["      // TODO: add symbol in private unicode range.
 
 UPnPDisplay::UPnPDisplay(const std::string &friendly_name, Printer *printer,
-                         int screensave_timeout)
+                         int screensave_timeout, FILE *logstream)
   : player_match_name_(friendly_name),
-    printer_(printer), screensave_timeout_(screensave_timeout),
+    printer_(printer), logstream_(logstream),
+    screensave_timeout_(screensave_timeout),
     current_state_(NULL) {
   pthread_mutex_init(&mutex_, NULL);
   signal(SIGTERM, &SigReceiver);
@@ -230,8 +231,9 @@ void UPnPDisplay::Loop() {
 
 void UPnPDisplay::AddRenderer(const std::string &uuid,
                               const RendererState *state) {
-  printf("%s: connected (uuid=%s)\n",            // not to LCD, different thread
-         state->friendly_name().c_str(), uuid.c_str());
+  // Not to LCD, different thread
+  fprintf(logstream_, "%s: connected (name='%s')\n",
+          uuid.c_str(), state->friendly_name().c_str());
   pthread_mutex_lock(&mutex_);
   if (current_state_ == NULL
       && (player_match_name_.empty()
@@ -244,7 +246,7 @@ void UPnPDisplay::AddRenderer(const std::string &uuid,
 }
 
 void UPnPDisplay::RemoveRenderer(const std::string &uuid) {
-  printf("disconnect (uuid=%s)\n", uuid.c_str()); // not to LCD, different thread
+  fprintf(logstream_, "disconnect (uuid=%s)\n", uuid.c_str());
   pthread_mutex_lock(&mutex_);
   if (current_state_ != NULL && uuid == uuid_) {
     current_state_ = NULL;

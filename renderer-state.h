@@ -32,7 +32,7 @@ class RendererState {
 public:
   typedef std::map<std::string, RendererState *> SubscriptionMap;
 
-  RendererState(const char *uuid);
+  RendererState(const char *uuid, FILE *logstream);
   ~RendererState();
 
   // -- method calls interesting for users.
@@ -70,6 +70,8 @@ private:
   void DecodeMetaAndInsertData_Locked(const char *xml);
 
   const std::string uuid_;
+  FILE* const logstream_;
+
   std::string friendly_name_;
   std::string base_url_;
 

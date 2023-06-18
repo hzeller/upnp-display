@@ -31,7 +31,9 @@ class RendererState;
 
 class ControllerState {
 public:
-  ControllerState(ControllerObserver *observer, Printer *printer);
+  ControllerState(const char *interface_name,
+                  ControllerObserver *observer, Printer *printer,
+                  FILE *logstream);
 
 private:
   void Register(const UpnpDiscovery *discovery);
@@ -43,6 +45,7 @@ private:
                               void *userdata);
 
   ControllerObserver *const observer_;
+  FILE *const logstream_;
 
   UpnpClient_Handle device_;
   pthread_mutex_t mutex_;

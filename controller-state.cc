@@ -31,27 +31,40 @@
 static const char kMediaRendererDevicePrefix[] =
   "urn:schemas-upnp-org:device:MediaRenderer:";
 
-ControllerState::ControllerState(ControllerObserver *observer,
-                                 Printer *printer)
-  : observer_(observer) {
+ControllerState::ControllerState(const char *interface_name,
+                                 ControllerObserver *observer,
+                                 Printer *printer, FILE *logstream)
+  : observer_(observer), logstream_(logstream) {
   assert(observer != NULL);  // without, it wouldn't make much sense.
   pthread_mutex_init(&mutex_, NULL);
-  // If network is not up yet, UpnpInit2() fails. Retry.
-  // This can happen if system just booted and DHCP is not settled yet.
-  int rc = UpnpInit2(NULL, 0);
+  char buffer[40];
+
+  snprintf(buffer, sizeof(buffer), "Interface: %s",
+           interface_name ? interface_name : "any");
+  printer->Print(0, "Network connect.");
+  printer->Print(1, buffer);
+
+  int rc = UpnpInit2(interface_name, 0);
   int retries_left = 60;
   static const int kRetryTimeMs = 1000;
+
+  // If network is not up yet, UpnpInit2() fails. Retry.
+  // This can happen if system just booted and DHCP is not settled yet.
   while (rc != UPNP_E_SUCCESS && retries_left--) {
     usleep(kRetryTimeMs * 1000);
-    char buffer[40];
     snprintf(buffer, sizeof(buffer), "Network...%d", retries_left);
     printer->Print(0, buffer);
-    fprintf(stderr, "UpnpInit2() Error: %s (%d). Retrying...(%ds)",
+    fprintf(logstream, "UpnpInit2() Error: %s (%d). Retrying...(%ds)",
             UpnpGetErrorMessage(rc), rc, retries_left);
-    rc = UpnpInit2(NULL, 0);
+    rc = UpnpInit2(interface_name, 0);
   }
   if (rc != UPNP_E_SUCCESS) {
-    fprintf(stderr, "UpnpInit2() Error: %s (%d).", UpnpGetErrorMessage(rc), rc);
+    fprintf(logstream, "UpnpInit2() Error: %s (%d).", UpnpGetErrorMessage(rc), rc);
+  } else {
+    snprintf(buffer, sizeof(buffer), "IP:%s:%d",
+             UpnpGetServerIpAddress(),
+             UpnpGetServerPort());
+    printer->Print(0, buffer);
   }
   UpnpRegisterClient(&UpnpEventHandler, this, &device_);
 }
@@ -71,7 +84,8 @@ void ControllerState::Register(const UpnpDiscovery *discovery) {
   pthread_mutex_lock(&mutex_);
   renderer = uuid2render_[uuid];
   if (renderer == NULL) {
-    renderer = new RendererState(UpnpDiscovery_get_Location_cstr(discovery));
+    renderer = new RendererState(UpnpDiscovery_get_Location_cstr(discovery),
+                                 logstream_);
     uuid2render_[uuid] = renderer;
     if (renderer->InitDescription(UpnpDiscovery_get_Location_cstr(discovery))) {
       renderer->SubscribeTo(device_, &subscription2render_);

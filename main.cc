@@ -20,6 +20,7 @@
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "controller-state.h"
@@ -34,11 +35,13 @@
 int main(int argc, char *argv[]) {
   std::string match_name;
   int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
+  FILE* logstream = stderr;
+  const char *interface_name = NULL;
   bool as_daemon = false;
   bool on_console = false;
   int screensave_after = -1;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:dcs:")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:w:dcs:qi:")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
@@ -66,6 +69,14 @@ int main(int argc, char *argv[]) {
       screensave_after = atoi(optarg);
       break;
 
+    case 'q':
+      logstream = fopen("/dev/null", "w");
+      break;
+
+    case 'i':
+      interface_name = strdup(optarg);
+      break;
+
     case 'h':
     default:
       fprintf(stderr, "Usage: %s <options>\n", argv[0]);
@@ -74,10 +85,13 @@ int main(int argc, char *argv[]) {
               "\t-w <display-width>       : Set display width.\n"
               "\t-d                       : Run as daemon.\n"
               "\t-c                       : On console instead LCD (debug).\n"
+              "\t-q                       : Quiet. Less log output\n"
               "\t-s <timeout-seconds>     : Screensave after this time.\n"
+              "\t-i <interface>           : use this network interface.\n"
               );
       return 1;
     }
+
   }
 
   Printer *printer = NULL;
@@ -115,8 +129,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  UPnPDisplay ui(match_name, printer, screensave_after);
-  ControllerState controller(&ui, printer);
+  UPnPDisplay ui(match_name, printer, screensave_after, logstream);
+  ControllerState controller(interface_name, &ui, printer, logstream);
   ui.Loop();
 
   delete printer;

@@ -19,6 +19,7 @@
 #define UPNP_DISPLAY_PRINTER_
 
 #include <string>
+#include <vector>
 
 // Interface for a simple display.
 class Printer {
@@ -39,13 +40,15 @@ public:
 // stuff continuously.
 class ConsolePrinter : public Printer {
 public:
-  explicit ConsolePrinter(int width) : width_(width) {}
+  explicit ConsolePrinter(int width, int height = 2)
+      : width_(width), lines_(height) {}
   virtual int width() const { return width_; }
   virtual void Print(int line, const std::string &text);
   virtual void SaveScreen() {}
 
 private:
   const int width_;
+  std::vector<std::string> lines_;
 };
 
 #endif  // UPNP_DISPLAY_PRINTER_

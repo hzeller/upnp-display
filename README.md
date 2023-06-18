@@ -131,7 +131,9 @@ Usage: ./upnp-display <options>
         -w <display-width>       : Set display width.
         -d                       : Run as daemon.
         -c                       : On console instead LCD (debug).
+        -q                       : Quiet. Less log output
         -s <timeout-seconds>     : Screensave after this time.
+        -i <interface>           : use this network interface.
 ```
 
 ### Compatibility

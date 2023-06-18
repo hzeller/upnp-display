@@ -63,8 +63,8 @@ static const char *find_first_content(IXML_Document *doc, const char *name) {
   return result;
 }
 
-RendererState::RendererState(const char *uuid)
-  : uuid_(uuid), descriptor_(NULL), subscriptions_(NULL),
+RendererState::RendererState(const char *uuid, FILE *logstream)
+  : uuid_(uuid), logstream_(logstream), descriptor_(NULL), subscriptions_(NULL),
     last_event_update_(time(NULL)) {
   pthread_mutex_init(&variable_mutex_, NULL);
 }
@@ -79,7 +79,7 @@ RendererState::~RendererState() {
 bool RendererState::InitDescription(const char *description_url) {
   assert(descriptor_ == NULL);  // call this only once.
   if (UpnpDownloadXmlDoc(description_url, &descriptor_) != UPNP_E_SUCCESS) {
-    fprintf(stderr, "Can't read service description: %s\n", description_url);
+    fprintf(logstream_, "Can't read service description: %s\n", description_url);
     return false;
   }
 
@@ -116,7 +116,7 @@ bool RendererState::SubscribeTo(UpnpClient_Handle upnp_controller,
   service_list = ixmlDocument_getElementsByTagName(descriptor_, "serviceList");
 
   if (service_list == NULL) {
-    fprintf(stderr, "No services found for %s (%s)\n",
+    fprintf(logstream_, "No services found for %s (%s)\n",
             friendly_name_.c_str(), uuid_.c_str());
     return false;
   }
@@ -156,7 +156,7 @@ bool RendererState::Subscribe(UpnpClient_Handle upnp_controller,
     subscriptions_->insert(std::make_pair(sid, this));
     subscription_ids_.push_back(sid);
   } else {
-    fprintf(stderr, "Subscribe: %s %s %s rc=%d\n",
+    fprintf(logstream_, "Subscribe: %s %s %s rc=%d\n",
             friendly_name_.c_str(),
             service_type, UpnpGetErrorMessage(rc), rc);
     return false;
@@ -253,10 +253,10 @@ void RendererState::DecodeMetaAndInsertData_Locked(const char *didl_xml) {
 void RendererState::ReceiveEvent(const UpnpEvent *data) {
     const char *as_string = find_first_content(
         UpnpEvent_get_ChangedVariables(data), "LastChange");
-  //fprintf(stderr, "Got variable changes: %s\n", as_string);
+  //fprintf(logstream_, "Got variable changes: %s\n", as_string);
   IXML_Document *doc = ixmlParseBuffer(as_string);
   if (doc == NULL) {
-    fprintf(stderr, "Invalid XML\n");
+    fprintf(logstream_, "Invalid XML\n");
     return;
   }
   IXML_NodeList *instance_list = NULL;

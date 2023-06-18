@@ -22,6 +22,7 @@
 
 #include "observer.h"
 #include <pthread.h>
+#include <stdio.h>
 
 class Printer;
 
@@ -31,7 +32,7 @@ public:
   // registered name (if empty string, waits for the first available).
   // Outputs to "printer".
   UPnPDisplay(const std::string &renderer_registered_name, Printer *printer,
-              int screensave_timeout);
+              int screensave_timeout, FILE *logstream);
 
   // Main Loop. Only exits on catching SIGTERM or SIGINT (Ctrl-c)
   void Loop();
@@ -57,6 +58,7 @@ private:
 
   const std::string player_match_name_;
   Printer *const printer_;
+  FILE *const logstream_;
   const int screensave_timeout_;
   pthread_mutex_t mutex_;
 

@@ -20,6 +20,15 @@
 
 #include <stdio.h>
 
+#define SCREEN_CURSOR_UP_FORMAT    "\033[%dA"  // Move cursor up given lines.
+
 void ConsolePrinter::Print(int line, const std::string &text) {
-  printf("[%d]%s\n", line, text.c_str());
+  if (line > (int)lines_.size()) return;
+  lines_[line] = text;
+
+  for (size_t i = 0; i < lines_.size(); ++i) {
+    printf("%*s\r", width_ + 1, "|");  // Clear possible last text
+    printf("%s\n", lines_[i].c_str());
+  }
+  printf(SCREEN_CURSOR_UP_FORMAT, (int)lines_.size());
 }
