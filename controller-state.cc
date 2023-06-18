@@ -61,10 +61,16 @@ ControllerState::ControllerState(const char *interface_name,
   if (rc != UPNP_E_SUCCESS) {
     fprintf(logstream, "UpnpInit2() Error: %s (%d).", UpnpGetErrorMessage(rc), rc);
   } else {
-    snprintf(buffer, sizeof(buffer), "IP:%s:%d",
+    snprintf(buffer, sizeof(buffer), "IPv4:%s:%d",
              UpnpGetServerIpAddress(),
              UpnpGetServerPort());
     printer->Print(0, buffer);
+    if (UpnpGetServerIp6Address() && *UpnpGetServerIp6Address()) {
+      snprintf(buffer, sizeof(buffer), "IPv6:%s:%d",
+               UpnpGetServerIp6Address(),
+               UpnpGetServerPort6());
+      printer->Print(1, buffer);
+    }
   }
   UpnpRegisterClient(&UpnpEventHandler, this, &device_);
 }

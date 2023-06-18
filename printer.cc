@@ -24,11 +24,19 @@
 
 void ConsolePrinter::Print(int line, const std::string &text) {
   if (line > (int)lines_.size()) return;
+  if (lines_[line] == text) return;  // no change.
   lines_[line] = text;
 
+  if (!in_place_) {
+    printf("[%d]: %s\n", line, text.c_str());
+    return;
+  }
+  if (needs_jump_) {
+    printf(SCREEN_CURSOR_UP_FORMAT, (int)lines_.size());
+  }
   for (size_t i = 0; i < lines_.size(); ++i) {
-    printf("%*s\r", width_ + 1, "|");  // Clear possible last text
+    printf("%*s\r", width_, "");  // Clear possible last text
     printf("%s\n", lines_[i].c_str());
   }
-  printf(SCREEN_CURSOR_UP_FORMAT, (int)lines_.size());
+  needs_jump_ = true;
 }

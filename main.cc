@@ -36,12 +36,13 @@ int main(int argc, char *argv[]) {
   std::string match_name;
   int display_width = DEFAULT_LCD_DISPLAY_WIDTH;
   FILE* logstream = stderr;
+  bool print_in_place = false;
   const char *interface_name = NULL;
   bool as_daemon = false;
   bool on_console = false;
   int screensave_after = -1;
   int opt;
-  while ((opt = getopt(argc, argv, "hn:w:dcs:qi:")) != -1) {
+  while ((opt = getopt(argc, argv, "hn:w:dCcs:qi:")) != -1) {
     switch (opt) {
     case 'n':
       if (optarg != NULL) match_name = optarg;
@@ -49,6 +50,11 @@ int main(int argc, char *argv[]) {
 
     case 'd':
       as_daemon = true;
+      break;
+
+    case 'C':
+      on_console = true;
+      print_in_place = true;
       break;
 
     case 'c':
@@ -83,11 +89,14 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "\t-n <name or \"uuid:\"<uuid>"
               ": Connect to this renderer.\n"
               "\t-w <display-width>       : Set display width.\n"
-              "\t-d                       : Run as daemon.\n"
-              "\t-c                       : On console instead LCD (debug).\n"
               "\t-q                       : Quiet. Less log output\n"
+              "\t-c                       : Log LCD output on console instead\n"
+              "\t                           (does not need Raspberry Pi GPIO)\n"
+              "\t-C                       : Like above but fixed position.\n"
+              "\t                           (Best with -q: no logs interfere)\n"
               "\t-s <timeout-seconds>     : Screensave after this time.\n"
               "\t-i <interface>           : use this network interface.\n"
+              "\t-d                       : Run as daemon.\n"
               );
       return 1;
     }
@@ -96,12 +105,12 @@ int main(int argc, char *argv[]) {
 
   Printer *printer = NULL;
   if (on_console) {
-    printer = new ConsolePrinter(display_width);
+    printer = new ConsolePrinter(print_in_place, display_width, 2);
   } else {
     LCDDisplay *display = new LCDDisplay(display_width);
     if (!display->Init()) {
       fprintf(stderr, "You need to run this as root to have access "
-              "to GPIO pins. Run with sudo (or with option -c to output on "
+              "to GPIO pins. Run with sudo (or with option -c/-C to output on "
               "console instead).\n");
       return 1;
     }

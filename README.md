@@ -129,11 +129,14 @@ in the same network, so you can have one display in every room :)
 Usage: ./upnp-display <options>
         -n <name or "uuid:"<uuid>: Connect to this renderer.
         -w <display-width>       : Set display width.
-        -d                       : Run as daemon.
-        -c                       : On console instead LCD (debug).
         -q                       : Quiet. Less log output
+        -c                       : Log LCD output on console instead
+                                   (does not need Raspberry Pi GPIO)
+        -C                       : Like above but fixed position.
+                                   (Best with -q: no logs interfere)
         -s <timeout-seconds>     : Screensave after this time.
         -i <interface>           : use this network interface.
+        -d                       : Run as daemon.
 ```
 
 ### Compatibility

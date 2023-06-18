@@ -40,14 +40,18 @@ public:
 // stuff continuously.
 class ConsolePrinter : public Printer {
 public:
-  explicit ConsolePrinter(int width, int height = 2)
-      : width_(width), lines_(height) {}
+  // 'in_place': refresh in place, otherwise just print line if changed.
+  // width and height in characters.
+  ConsolePrinter(bool in_place, int width, int height)
+    : in_place_(in_place), width_(width), needs_jump_(false), lines_(height) {}
   virtual int width() const { return width_; }
   virtual void Print(int line, const std::string &text);
   virtual void SaveScreen() {}
 
 private:
+  const bool in_place_;
   const int width_;
+  bool needs_jump_;
   std::vector<std::string> lines_;
 };
 

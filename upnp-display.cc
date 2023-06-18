@@ -70,6 +70,7 @@ void UPnPDisplay::Loop() {
   std::string volume, previous_volume;
   time_t last_update = 0;
   int track_time = 0;
+  int relative_time = 0;
 
   Scroller first_line_scroller("  -  ");
   Scroller second_line_scroller("  -  ");
@@ -96,8 +97,9 @@ void UPnPDisplay::Loop() {
       }
       album = current_state_->GetVar("Meta_Album");
       play_state = current_state_->GetVar("TransportState");
-      // Relative time pos is not evented. TODO: query actively.
-      //time = parseTime(current_state_->GetVar("RelativeTimePosition"));
+      // "RelativeTimePosition" var is not evented by default.
+      // TODO: query actively.
+      relative_time = 0;
       // for now, we just show the duration.
       track_time = parseTime(current_state_->GetVar("CurrentTrackDuration"));
       volume = current_state_->GetVar("Volume");
@@ -183,7 +185,9 @@ void UPnPDisplay::Loop() {
     if (play_state == "STOPPED") {
       formatted_time = "  " STOP_SYMBOL " ";
     } else {
-      formatted_time = formatTime(track_time);
+      // relative time might not be evented. In that case, show track time.
+      const int show_time = relative_time ? relative_time : track_time;
+      formatted_time = formatTime(show_time);
       // 'Blinking' time when paused.
       if (play_state == "PAUSED_PLAYBACK" && blink_time % 2 == 0) {
         formatted_time = std::string(formatted_time.size(), ' ');
