@@ -6,10 +6,7 @@
 pkgs.mkShell {
   buildInputs = with pkgs;
     [
-      automake
-      autoreconfHook
       pkg-config
-      gst_all_1.gstreamer
       libupnp
     ];
 }
