@@ -19,6 +19,7 @@
 #define UPNP_DISPLAY_UTF8_H
 
 #include <stdint.h>
+#include <string>
 
 // Utility function that reads UTF-8 encoded codepoints from byte iterator.
 // No error checking, we assume string is UTF-8 clean.

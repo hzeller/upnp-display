@@ -19,16 +19,27 @@
 #include "printer.h"
 
 #include <stdio.h>
+#include "utf8.h"
 
 #define SCREEN_CURSOR_UP_FORMAT    "\033[%dA"  // Move cursor up given lines.
 
-void ConsolePrinter::Print(int line, const std::string &text) {
+std::string Utf8CutPrefix(const std::string &str, int len) {
+  std::string::const_iterator pos = str.begin();
+  while (len > 0 && pos != str.end()) {
+    utf8_next_codepoint(pos);
+    --len;
+  }
+  return str.substr(0, pos - str.begin());
+}
+
+void ConsolePrinter::Print(int line, const std::string &raw_text) {
   if (line > (int)lines_.size()) return;
-  if (lines_[line] == text) return;  // no change.
-  lines_[line] = text;
+  const std::string display_text = Utf8CutPrefix(raw_text, width_);
+  if (lines_[line] == display_text) return;  // no change.
+  lines_[line] = display_text;
 
   if (!in_place_) {
-    printf("[%d]: %s\n", line, text.c_str());
+    printf("[%d]: %s\n", line, display_text.c_str());
     return;
   }
   if (needs_jump_) {
